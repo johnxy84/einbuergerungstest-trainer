@@ -51,3 +51,7 @@ Questions and figures come from the BAMF *Fragenkatalog zum Einbürgerungstest* 
 ## Deploying
 
 The site is plain static files: publish the repository root with no build command.
+
+## License
+
+The code is released under the [MIT License](LICENSE). The question catalogue (`data/questions.js`) and the figures in `images/` come from the BAMF and are not covered by that license.

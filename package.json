@@ -2,6 +2,7 @@
   "name": "einbuergerungstest-trainer",
   "version": "1.0.0",
   "private": true,
+  "license": "MIT",
   "description": "Offline trainer for the German Einbürgerungstest (Bavaria question pool)",
   "scripts": {
     "validate": "node scripts/validate-data.js",
