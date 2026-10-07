@@ -259,7 +259,7 @@ window.EXPLANATIONS = {
   257: "Adults can obtain the Abitur at an Abendgymnasium (evening school).",
   258: "The Jugendamt can take a child into care if the child is abused or neglected.",
   259: "The BIZ of the Bundesagentur für Arbeit helps with career choices and finding an apprenticeship.",
-  260: "School attendance is compulsory. Children have no right to free-for-all subjects or unlimited free time.",
+  260: "School attendance is compulsory. Children have no right to unlimited free time or to choose every subject.",
   261: "Adults can get the Abitur at an Abendgymnasium.",
   262: "Equal treatment (Art. 3) means nobody may be disadvantaged for reasons such as disability, origin, gender or religion.",
   263: "From 14, young people are criminally responsible. They are judged under juvenile criminal law, not exactly like adults.",
