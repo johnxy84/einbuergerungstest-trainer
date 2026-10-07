@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="Offline trainer for the German Einbürgerungstest: all 310 BAMF questions for Bavaria with English translations, explanations, spaced repetition and a timed mock exam.">
+  <title>Einbürgerungstest Trainer · Bayern</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <div>
+        <h1>Einbürgerungstest Trainer</h1>
+        <p class="muted">All 310 questions for Bavaria · German with English translation · works offline</p>
+      </div>
+      <span class="badge">BAMF catalogue · 07.05.2025</span>
+    </header>
+
+    <p class="notice">Progress is stored only in this browser. Use <strong>Export</strong> to back it up or move it to another device.</p>
+
+    <nav class="tabs" id="tabs" aria-label="Question sets"></nav>
+
+    <div class="toolbar">
+      <button type="button" id="translate" aria-pressed="true"></button>
+      <button type="button" id="shuffle">🔀 Shuffle</button>
+      <button type="button" id="export">💾 Export progress</button>
+      <button type="button" id="import">📥 Import progress</button>
+      <button type="button" id="reset" class="danger">↺ Reset progress</button>
+      <input id="file" type="file" accept="application/json" hidden>
+    </div>
+
+    <div class="grid">
+      <main class="card" id="main">
+        <div class="meta"><span id="scope"></span><span aria-hidden="true">•</span><span id="counter"></span></div>
+
+        <section id="examBar" class="exam-bar" hidden>
+          <div class="exam-head">
+            <span class="timer" id="timer" role="timer" aria-label="Time remaining">60:00</span>
+            <span class="small" id="examAnswered"></span>
+            <button type="button" id="finishExam" class="primary">Finish exam</button>
+          </div>
+          <div class="navigator" id="navigator" role="group" aria-label="Question navigator"></div>
+        </section>
+
+        <section id="result" class="result" hidden></section>
+
+        <h2 class="q" id="question" lang="de"></h2>
+        <div id="translation" class="translation" lang="en"></div>
+        <img id="qimg" class="qimg" alt="" hidden>
+        <div id="options" class="options"></div>
+        <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+
+        <div class="footer">
+          <button type="button" id="prev">← Previous</button>
+          <button type="button" id="next" class="primary">Next →</button>
+        </div>
+      </main>
+
+      <aside class="card side">
+        <h2>Your progress</h2>
+        <dl class="stats">
+          <div><dt>Seen</dt><dd id="seen">0</dd></div>
+          <div><dt>Due now</dt><dd id="dueCount">0</dd></div>
+          <div><dt>Mastered</dt><dd id="masteredCount">0</dd></div>
+          <div><dt>Missed last time</dt><dd id="mistakeCount">0</dd></div>
+          <div><dt>Accuracy</dt><dd id="accuracy">—</dd></div>
+        </dl>
+        <div class="stack" id="stack" role="img" aria-label="Questions by review box"></div>
+        <ul class="legend" id="legend"></ul>
+        <p class="small" id="mode"></p>
+
+        <div class="jump">
+          <label for="jump" class="small">Jump to position</label>
+          <div class="jump-row">
+            <input id="jump" type="number" min="1" inputmode="numeric" placeholder="#">
+            <button type="button" id="go">Go</button>
+          </div>
+        </div>
+
+        <h3>Mock exams</h3>
+        <ol class="history" id="history"></ol>
+      </aside>
+    </div>
+
+    <footer class="small muted foot">
+      Questions: Bundesamt für Migration und Flüchtlinge, Fragenkatalog zum Einbürgerungstest (Stand 07.05.2025). English texts and explanations are study aids; German is the exam wording.
+    </footer>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="data/questions.js"></script>
+  <script src="data/explanations.js"></script>
+  <script src="js/srs.js"></script>
+  <script src="js/exam.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

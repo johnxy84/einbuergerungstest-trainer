@@ -1,0 +1,12 @@
+{
+  "name": "einbuergerungstest-trainer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Offline trainer for the German Einbürgerungstest (Bavaria question pool)",
+  "scripts": {
+    "validate": "node scripts/validate-data.js",
+    "test": "node --test",
+    "start": "python3 -m http.server 8080"
+  },
+  "engines": { "node": ">=20" }
+}
