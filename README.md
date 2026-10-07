@@ -2,6 +2,10 @@
 
 A static, offline-capable trainer for the German naturalisation test (Einbürgerungstest), using the Bavaria question pool: 300 general questions plus 10 for Bayern. German wording with English translations and a short explanation for every answer.
 
+![Study view with an answered question, explanation and progress overview](docs/screenshot.jpg)
+
+*Screenshot with demo progress.*
+
 ## Features
 
 - All 310 questions, including the 9 figure questions, with English translations that can be switched off.
@@ -42,7 +46,7 @@ Scripts are plain browser scripts, not ES modules, so the page also works from `
 
 ## Data
 
-Questions come from the BAMF *Fragenkatalog zum Einbürgerungstest* (07.05.2025). The English translations and explanations are study aids; the German text is what the exam uses. Time-dependent questions (current Chancellor, largest parliamentary groups, population) reflect that edition and will need updating when the catalogue changes.
+Questions and figures come from the BAMF *Fragenkatalog zum Einbürgerungstest* (07.05.2025). The two photo questions keep the credits printed in the catalogue: © Deutscher Bundestag/Achim Melde (Reichstag) and © Bundesregierung/Engelbert Reineke (Chancellor appointment). This project is an unofficial study aid and is not affiliated with the BAMF. The English translations and explanations are study aids; the German text is what the exam uses. Time-dependent questions (current Chancellor, largest parliamentary groups, population) reflect that edition and will need updating when the catalogue changes.
 
 ## Deploying
 
