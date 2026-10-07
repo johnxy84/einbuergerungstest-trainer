@@ -503,8 +503,35 @@
     $('jump').addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
   }
 
+  const INTRO_KEY = 'einbuergerungstest.intro.dismissed';
+
+  function introDismissed() {
+    try { return window.localStorage.getItem(INTRO_KEY) === '1'; } catch (_) { return false; }
+  }
+
+  function bindGuide() {
+    const dialog = $('guide');
+    const open = () => {
+      if (typeof dialog.showModal === 'function') dialog.showModal();
+      else dialog.setAttribute('open', '');
+      dialog.querySelector('.guide-body').scrollTop = 0;
+    };
+    const close = () => dialog.close();
+    const dismissIntro = () => {
+      $('intro').hidden = true;
+      try { window.localStorage.setItem(INTRO_KEY, '1'); } catch (_) { /* the callout will simply show again */ }
+    };
+    for (const id of ['openGuide', 'footGuide']) $(id).addEventListener('click', open);
+    $('introOpen').addEventListener('click', () => { dismissIntro(); open(); });
+    $('introDismiss').addEventListener('click', dismissIntro);
+    $('closeGuide').addEventListener('click', close);
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) close(); });
+    $('intro').hidden = introDismissed() || Object.keys(cards()).length > 0;
+  }
+
   function init() {
     bind();
+    bindGuide();
     state.exam = state.progress.activeExam;
     if (state.exam && Exam.remainingMs(state.exam, Date.now()) <= 0) {
       finishExam(true);

@@ -15,8 +15,19 @@
         <h1>Einbürgerungstest Trainer</h1>
         <p class="muted">All 310 questions for Bavaria · German with English translation · works offline</p>
       </div>
-      <span class="badge">BAMF catalogue · 07.05.2025</span>
+      <div class="top-actions">
+        <button type="button" id="openGuide">ℹ️ How to study</button>
+        <span class="badge">BAMF catalogue · 07.05.2025</span>
+      </div>
     </header>
+
+    <div class="intro" id="intro" hidden>
+      <span><strong>New here?</strong> Read the two-minute guide to studying with this trainer.</span>
+      <span class="intro-actions">
+        <button type="button" class="primary" id="introOpen">How to study</button>
+        <button type="button" id="introDismiss">Dismiss</button>
+      </span>
+    </div>
 
     <p class="notice">Progress is stored only in this browser. Use <strong>Export</strong> to back it up or move it to another device.</p>
 
@@ -85,9 +96,95 @@
     </div>
 
     <footer class="small muted foot">
+      <button type="button" class="link" id="footGuide">How to study</button> ·
       Questions: Bundesamt für Migration und Flüchtlinge, Fragenkatalog zum Einbürgerungstest (Stand 07.05.2025). English texts and explanations are study aids; German is the exam wording.
     </footer>
   </div>
+
+
+  <dialog id="guide" class="guide" aria-labelledby="guideTitle">
+    <div class="guide-head">
+      <h2 id="guideTitle">How to study for the Einbürgerungstest</h2>
+      <button type="button" id="closeGuide" aria-label="Close guide">✕</button>
+    </div>
+
+    <div class="guide-body">
+      <section>
+        <h3>The test in 30 seconds</h3>
+        <ul>
+          <li>The test has <strong>33 multiple-choice questions</strong>, each with four answers and one correct one.</li>
+          <li>You get <strong>60 minutes</strong> and need <strong>at least 17 correct</strong> to pass.</li>
+          <li>30 questions come from the general pool of 300 that applies in every federal state. 3 come from your state's pool, here the <strong>10 Bavaria questions</strong>.</li>
+          <li>Every possible question is in this trainer. The exam only reuses them, so learning all 310 is enough.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>A simple routine</h3>
+        <ol>
+          <li><strong>Study</strong> every day. It shows what is due for review first, then 15 new questions. Clear the due ones before moving on.</li>
+          <li>Learn the <strong>10 Bavaria questions</strong> in the first days. They come first among the new ones.</li>
+          <li>Take a <strong>Mock exam</strong> about once a week, and daily in the last week. Aim for 27 or more out of 33 so you have a safety margin over 17.</li>
+          <li>With around 15 new questions a day you will have seen everything in about three weeks. Keep reviewing until the exam.</li>
+        </ol>
+      </section>
+
+      <section>
+        <h3>What the tabs do</h3>
+        <dl class="defs">
+          <dt>📖 Study</dt><dd>Your daily session. Due questions first (weakest first), then up to 15 new ones. A question you miss comes back once at the end of the session.</dd>
+          <dt>🎯 Mock exam</dt><dd>33 random questions in 60 minutes, like the real test. You can change answers until you press <em>Finish exam</em>, and the clock keeps running if you reload. When it hits zero the exam is submitted. Afterwards you can step through every question with the explanation.</dd>
+          <dt>📚 Browse…</dt><dd>Filters for looking things up: all questions in catalogue order, general only, Bavaria only, questions you have not seen yet, your mistakes, and the ones you have mastered.</dd>
+        </dl>
+      </section>
+
+      <section>
+        <h3>How the review schedule works</h3>
+        <p>The trainer uses a simple spaced-repetition system. Every question sits in a box. A correct answer moves it up and delays the next review. A wrong answer sends it back to the start.</p>
+        <table class="boxes">
+          <thead><tr><th>Box</th><th>Next review after a correct answer</th></tr></thead>
+          <tbody>
+            <tr><td>Relearn</td><td>Right away: you missed it last time</td></tr>
+            <tr><td>1</td><td>1 day</td></tr>
+            <tr><td>2</td><td>3 days</td></tr>
+            <tr><td>3</td><td>7 days</td></tr>
+            <tr><td>4</td><td>16 days (counts as mastered)</td></tr>
+            <tr><td>5</td><td>35 days</td></tr>
+          </tbody>
+        </table>
+        <p>Answers given inside a mock exam update the schedule too. Skipped exam questions do not.</p>
+      </section>
+
+      <section>
+        <h3>Tips for learning</h3>
+        <ul>
+          <li>The exam is in German. Start with the <strong>English</strong> translations switched on, then switch them off (the 🌐 button) once the German wording feels familiar.</li>
+          <li>After a wrong answer, read the <strong>Why</strong> note. Understanding the reason sticks better than memorising the letter.</li>
+          <li>Watch for <strong>“nicht”</strong> in questions such as “Which is not …”. They ask for the exception.</li>
+          <li>Dates, numbers and names (1945, 1949, 1961, 1989, 1990, 16 states, 5% threshold) come up a lot. Make small flash cards for them.</li>
+          <li>Some questions show a picture: coats of arms, a map, a ballot paper or photographs. Look at the image before the answers.</li>
+          <li>Short sessions every day work better than one long session a week.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>Your progress and privacy</h3>
+        <ul>
+          <li>Everything is stored <strong>only in this browser</strong>. There is no account, and nothing is sent to a server.</li>
+          <li>Clearing your browser data, or using another browser or device, starts you from zero. Use <strong>Export progress</strong> to save a file and <strong>Import progress</strong> to load it again elsewhere.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>Good to know</h3>
+        <ul>
+          <li>This is an <strong>unofficial</strong> study aid. The German wording is what counts in the exam. The English translations and explanations are there to help you understand.</li>
+          <li>The questions come from the BAMF catalogue dated 07.05.2025. A few answers depend on the date, such as the current Chancellor, the largest parliamentary groups and the population. Check them against the latest catalogue before your exam.</li>
+          <li>Details about registering for the test and where to take it are handled by your local authority or test centre. This trainer does not cover them.</li>
+        </ul>
+      </section>
+    </div>
+  </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
