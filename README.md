@@ -2,6 +2,8 @@
 
 A static, offline-capable trainer for the German naturalisation test (Einbürgerungstest), using the Bavaria question pool: 300 general questions plus 10 for Bayern. German wording with English translations and a short explanation for every answer.
 
+**Live site: https://einbuergerungstest-trainer-tan.vercel.app/**
+
 ![Study view with an answered question, explanation and progress overview](docs/screenshot.jpg)
 
 *Screenshot with demo progress.*
@@ -46,11 +48,11 @@ Scripts are plain browser scripts, not ES modules, so the page also works from `
 
 ## Data
 
-Questions and figures come from the BAMF *Fragenkatalog zum Einbürgerungstest* (07.05.2025). The two photo questions keep the credits printed in the catalogue: © Deutscher Bundestag/Achim Melde (Reichstag) and © Bundesregierung/Engelbert Reineke (Chancellor appointment). This project is an unofficial study aid and is not affiliated with the BAMF. The English translations and explanations are study aids; the German text is what the exam uses. Time-dependent questions (current Chancellor, largest parliamentary groups, population) reflect that edition and will need updating when the catalogue changes.
+Questions and figures come from the BAMF *Fragenkatalog zum Einbürgerungstest* (07.05.2025). The Reichstag photo for question 55 is by Gary Todd and released under CC0 via [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Reichstag_(28764267615).jpg). This project is an unofficial study aid and is not affiliated with the BAMF. The English translations and explanations are study aids; the German text is what the exam uses. Time-dependent questions (current Chancellor, largest parliamentary groups, population) reflect that edition and will need updating when the catalogue changes.
 
 ## Deploying
 
-The site is plain static files: publish the repository root with no build command.
+The site is plain static files: publish the repository root with no build command. It is hosted on Vercel and redeploys on every push to `main`.
 
 ## License
 

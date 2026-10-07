@@ -381,6 +381,7 @@
       $('question').textContent = EMPTY_MESSAGES[state.mode] || 'No questions in this set.';
       $('translation').classList.remove('show');
       $('qimg').hidden = true;
+      $('imgCredit').hidden = true;
       $('options').replaceChildren();
       $('feedback').className = 'feedback';
       $('feedback').replaceChildren();
@@ -406,6 +407,8 @@
       img.removeAttribute('src');
       img.hidden = true;
     }
+    $('imgCredit').textContent = q.imageCredit || '';
+    $('imgCredit').hidden = !(q.image && q.imageCredit);
 
     const { picked, revealed } = renderOptions(q);
     renderFeedback(q, picked, revealed);
