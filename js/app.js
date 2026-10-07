@@ -6,7 +6,7 @@
   const BY_ID = Object.fromEntries(QUESTIONS.map((q) => [q.id, q]));
   const LETTERS = 'ABCD';
   const EMPTY_MESSAGES = {
-    due: 'Nothing is due for review right now. Try the New tab to learn more questions.',
+    study: 'You are all caught up: nothing is due and every question has been seen. Pick a set under Browse to keep practising.',
     new: 'You have seen every question.',
     mistakes: 'No missed questions. Excellent!',
     mastered: 'No mastered questions yet. Answer correctly across several days to build this list.',
@@ -50,20 +50,25 @@
     review: null,
   };
 
-  const MODES = [
-    { id: 'due', label: '🔁 Due', count: () => dueQuestions().length },
-    { id: 'all', label: '📚 All 310' },
-    { id: 'general', label: '🇩🇪 General 300' },
-    { id: 'bayern', label: '🟦 Bayern 10' },
-    { id: 'new', label: '👀 New', count: () => QUESTIONS.filter((q) => !state.progress.cards[q.id]).length },
-    { id: 'mistakes', label: '📌 Mistakes', count: () => QUESTIONS.filter((q) => SRS.isMistake(state.progress.cards[q.id])).length },
-    { id: 'mastered', label: '⭐ Mastered', count: () => QUESTIONS.filter((q) => SRS.isMastered(state.progress.cards[q.id])).length },
+  const NEW_PER_SESSION = 15;
+
+  const TABS = [
+    { id: 'study', label: '📖 Study', count: () => dueQuestions().length },
     { id: 'exam', label: '🎯 Mock exam' },
+  ];
+  const BROWSE = [
+    { id: 'all', label: 'All 310' },
+    { id: 'general', label: 'General 300' },
+    { id: 'bayern', label: 'Bayern 10' },
+    { id: 'new', label: 'New', count: () => QUESTIONS.filter((q) => !state.progress.cards[q.id]).length },
+    { id: 'mistakes', label: 'Mistakes', count: () => QUESTIONS.filter((q) => SRS.isMistake(state.progress.cards[q.id])).length },
+    { id: 'mastered', label: 'Mastered', count: () => QUESTIONS.filter((q) => SRS.isMastered(state.progress.cards[q.id])).length },
   ];
 
   const cards = () => state.progress.cards;
   const dueQuestions = () => SRS.dueQueue(QUESTIONS, cards(), Date.now());
   const current = () => state.pool[state.index];
+  const inExam = () => state.mode === 'exam' && !!state.exam;
   const persist = () => { if (!store.save(state.progress)) toast('Could not save progress: browser storage is unavailable.'); };
 
   let toastTimer = 0;
@@ -78,7 +83,7 @@
   function buildPool(mode) {
     const c = cards();
     switch (mode) {
-      case 'due': return dueQuestions();
+      case 'study': return SRS.studyQueue(QUESTIONS, c, Date.now(), NEW_PER_SESSION);
       case 'general': return QUESTIONS.filter((q) => q.scope === 'General');
       case 'bayern': return QUESTIONS.filter((q) => q.scope === 'Bayern');
       case 'new': return QUESTIONS.filter((q) => !c[q.id]);
@@ -118,7 +123,7 @@
     } else {
       cards()[q.id] = SRS.grade(cards()[q.id], ok, Date.now());
       persist();
-      if (!ok && state.mode === 'due') {
+      if (!ok && state.mode === 'study') {
         state.pool.push(q);
         state.retryAt.add(state.pool.length - 1);
       }
@@ -192,19 +197,33 @@
   function renderTabs() {
     const nav = $('tabs');
     if (!nav.children.length) {
-      for (const m of MODES) {
-        nav.append(h('button', { type: 'button', 'data-mode': m.id, onclick: () => setMode(m.id) }, h('span', { class: 'label', text: m.label }), m.count ? h('span', { class: 'count' }) : null));
+      for (const t of TABS) {
+        nav.append(h('button', { type: 'button', 'data-mode': t.id, onclick: () => setMode(t.id) }, h('span', { text: t.label }), t.count ? h('span', { class: 'count' }) : null));
       }
+      nav.append(h('select', { id: 'browse', 'aria-label': 'Browse question sets', onchange: (e) => e.target.value && setMode(e.target.value) },
+        h('option', { value: '', text: '📚 Browse…' }),
+        BROWSE.map((b) => h('option', { value: b.id }))));
     }
-    for (const b of nav.children) {
-      const m = MODES.find((x) => x.id === b.dataset.mode);
-      const active = m.id === state.mode;
+    for (const b of nav.querySelectorAll('button')) {
+      const t = TABS.find((x) => x.id === b.dataset.mode);
+      const active = t.id === state.mode;
       b.classList.toggle('active', active);
       if (active) b.setAttribute('aria-current', 'true');
       else b.removeAttribute('aria-current');
       const count = b.querySelector('.count');
-      if (count) count.textContent = m.count();
+      if (count) {
+        const n = t.count();
+        count.textContent = n;
+        count.hidden = n === 0;
+      }
     }
+    const select = $('browse');
+    BROWSE.forEach((b, i) => {
+      select.options[i + 1].textContent = b.label + (b.count ? ' (' + b.count() + ')' : '');
+    });
+    const browsing = BROWSE.some((b) => b.id === state.mode);
+    select.value = browsing ? state.mode : '';
+    select.classList.toggle('active', browsing);
   }
 
   function renderTimer(left) {
@@ -261,7 +280,7 @@
   }
 
   function renderOptions(q) {
-    const exam = state.exam;
+    const exam = inExam() ? state.exam : null;
     const reviewing = state.mode === 'exam' && !!state.review;
     const picked = exam ? exam.choices[q.id] : reviewing ? state.review.exam.choices[q.id] : state.picked[state.index];
     const revealed = reviewing || (!exam && picked != null);
@@ -323,7 +342,7 @@
     $('legend').replaceChildren(...segments.map((s) => h('li', {}, h('i', { class: 'swatch ' + s.cls }), h('span', { text: s.label }), h('b', { text: s.n }))));
 
     const modeNotes = {
-      due: 'Questions whose review date has arrived, weakest first. Missed ones return at the end of the session.',
+      study: 'Questions due for review come first, weakest first, followed by up to ' + NEW_PER_SESSION + ' new ones (Bavaria first). Missed questions return once at the end.',
       all: 'All 310 questions in catalogue order.',
       general: 'The 300 questions shared by every federal state.',
       bayern: 'The 10 Bavaria questions.',
@@ -354,7 +373,7 @@
     t.textContent = showEn ? '🌐 English: On' : '🌐 English: Off';
     t.setAttribute('aria-pressed', String(showEn));
     t.classList.toggle('active', showEn);
-    $('shuffle').disabled = state.mode === 'exam';
+    $('shuffle').disabled = state.mode === 'exam' || state.mode === 'study';
 
     if (!q) {
       $('scope').textContent = '';
@@ -371,7 +390,7 @@
     }
 
     $('scope').textContent = q.scope === 'Bayern' ? '🟦 Bayern' : '🇩🇪 General';
-    $('counter').textContent = (state.index + 1) + ' / ' + state.pool.length + (state.mode === 'due' && state.retryAt.has(state.index) ? ' · retry' : '');
+    $('counter').textContent = (state.index + 1) + ' / ' + state.pool.length + (state.mode === 'study' && state.retryAt.has(state.index) ? ' · retry' : '');
     $('question').textContent = q.q;
 
     const tr = $('translation');
@@ -394,14 +413,14 @@
     const last = state.index === state.pool.length - 1;
     $('prev').disabled = state.index === 0;
     $('next').disabled = state.mode === 'exam' && !!state.review && last;
-    $('next').textContent = last ? (state.exam ? 'Finish exam' : state.mode === 'exam' ? 'End of review' : 'Done') : 'Next →';
+    $('next').textContent = last ? (inExam() ? 'Finish exam' : state.mode === 'exam' ? 'End of review' : 'Done') : 'Next →';
   }
 
   // ---- navigation and toolbar ---------------------------------------------
 
   function next() {
     if (state.index < state.pool.length - 1) { state.index += 1; render(); return; }
-    if (state.exam) { onFinishClick(); return; }
+    if (inExam()) { onFinishClick(); return; }
     if (state.mode !== 'exam') {
       const finished = state.pool.length;
       setMode(state.mode);
@@ -449,7 +468,7 @@
   }
 
   function defaultMode() {
-    return dueQuestions().length ? 'due' : 'all';
+    return 'study';
   }
 
   function bind() {

@@ -49,6 +49,14 @@
       .sort((a, b) => cards[a.id].box - cards[b.id].box || cards[a.id].due - cards[b.id].due);
   }
 
+  // Due cards first, then up to newLimit unseen questions with the Bavaria ones ahead of the general pool.
+  function studyQueue(questions, cards, now, newLimit) {
+    const due = dueQueue(questions, cards, now);
+    const unseen = questions.filter((q) => !cards[q.id] || cards[q.id].seen === 0);
+    const fresh = unseen.filter((q) => q.scope === 'Bayern').concat(unseen.filter((q) => q.scope !== 'Bayern'));
+    return due.concat(fresh.slice(0, newLimit));
+  }
+
   // boxes[0] holds cards that were missed last time and need relearning; unseen questions are counted separately.
   function distribution(questions, cards) {
     const out = { unseen: 0, boxes: new Array(BOX_DAYS.length).fill(0) };
@@ -66,5 +74,5 @@
     return days === 1 ? 'next review in 1 day' : 'next review in ' + days + ' days';
   }
 
-  return { DAY_MS, BOX_DAYS, MAX_BOX, MASTERED_BOX, RETRY_DELAY_MS, newCard, grade, postpone, isDue, isMastered, isMistake, dueQueue, distribution, describeInterval };
+  return { DAY_MS, BOX_DAYS, MAX_BOX, MASTERED_BOX, RETRY_DELAY_MS, newCard, grade, postpone, isDue, isMastered, isMistake, dueQueue, studyQueue, distribution, describeInterval };
 });
