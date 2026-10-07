@@ -7,7 +7,7 @@
   const MAX_EXAM_HISTORY = 30;
 
   function empty() {
-    return { version: 2, cards: {}, exams: [], activeExam: null, settings: { showEnglish: true } };
+    return { version: 2, cards: {}, exams: [], activeExam: null, settings: { showEnglish: false } };
   }
 
   const num = (v, fallback) => (Number.isFinite(v) ? v : fallback);

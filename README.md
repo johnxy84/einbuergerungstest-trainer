@@ -6,11 +6,11 @@ A static, offline-capable trainer for the German naturalisation test (Einbürger
 
 ![Study view with an answered question, explanation and progress overview](docs/screenshot.jpg)
 
-*Screenshot with demo progress.*
+*Screenshot with demo progress and the English translation switched on.*
 
 ## Features
 
-- All 310 questions, including the 9 figure questions, with English translations that can be switched off.
+- All 310 questions, including the 9 figure questions, with English translations that are off by default and can be switched on with one click.
 - Explanations after each answer.
 - Spaced repetition (Leitner boxes): correct answers move a question to a longer review interval (1, 3, 7, 16, 35 days), a wrong answer sends it back to be relearned. The **Study** tab serves what is due first (weakest boxes first), then up to 15 new questions, Bavaria first. The **Browse** menu filters the catalogue (all, general, Bayern, new, mistakes, mastered).
 - Timed mock exam: 33 questions (30 general, 3 Bavaria), 60 minutes, pass mark 17. Answers can be changed until you finish, the clock survives a page reload, and the exam is submitted automatically when time runs out.

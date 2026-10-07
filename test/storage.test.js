@@ -34,6 +34,10 @@ test('a first-version export is regraded against the current answer key', () => 
   assert.ok(!SRS.isDue(p.cards[1], NOW));
 });
 
+test('English translations are off by default', () => {
+  assert.equal(Store.empty().settings.showEnglish, false);
+});
+
 test('a second-version export round-trips', () => {
   const p = Store.empty();
   p.cards[5] = SRS.grade(SRS.newCard(), true, NOW);
