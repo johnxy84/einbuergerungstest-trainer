@@ -370,7 +370,7 @@
     const q = current();
     const t = $('translate');
     const showEn = state.progress.settings.showEnglish;
-    t.textContent = showEn ? '🌐 English: On' : '🌐 English: Off';
+    t.replaceChildren('🌐 ', h('span', { class: 'lang-long', text: 'English' }), h('span', { class: 'lang-short', text: 'EN' }), showEn ? ': On' : ': Off');
     t.setAttribute('aria-pressed', String(showEn));
     t.classList.toggle('active', showEn);
     $('shuffle').disabled = state.mode === 'exam' || state.mode === 'study';
