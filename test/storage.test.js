@@ -47,6 +47,15 @@ test('a second-version export round-trips', () => {
   assert.deepEqual(again.exams, p.exams);
 });
 
+test("today's count of new questions survives an export, and a malformed one is dropped", () => {
+  const p = Store.empty();
+  p.daily = SRS.addNewBatch(SRS.countNewStarted(null, NOW), NOW);
+  assert.deepEqual(Store.normalize(JSON.parse(Store.serialize(p, NOW)), byId, NOW).daily, p.daily);
+  assert.deepEqual(Store.normalize({ version: 2, daily: { day: '2026-06-01', started: -3, extra: 2.9 } }, byId, NOW).daily, { day: '2026-06-01', started: 0, extra: 2 });
+  assert.equal(Store.normalize({ version: 2, daily: { day: 'today', started: 5 } }, byId, NOW).daily, null);
+  assert.equal(Store.normalize({ version: 2 }, byId, NOW).daily, null);
+});
+
 test('imports drop unknown questions and clamp bad numbers', () => {
   const p = Store.normalize({
     version: 2,

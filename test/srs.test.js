@@ -96,3 +96,20 @@ test('the study queue lists due cards, then new Bavaria questions, then new gene
   assert.deepEqual(SRS.studyQueue(qs, cards, NOW, 0).map((q) => q.id), [1]);
   assert.deepEqual(SRS.studyQueue(qs, {}, NOW, 99).map((q) => q.id), [3, 5, 1, 2, 4, 6]);
 });
+
+test('Study starts at most 15 new questions a day, more on request, and starts over the next local day', () => {
+  const evening = new Date(2026, 0, 1, 23, 50).getTime();
+  const nextMorning = new Date(2026, 0, 2, 0, 10).getTime();
+  assert.equal(SRS.dayKey(evening), '2026-01-01');
+  assert.equal(SRS.newLeftToday(null, evening), SRS.NEW_PER_DAY);
+
+  let daily = null;
+  for (let i = 0; i < SRS.NEW_PER_DAY; i++) daily = SRS.countNewStarted(daily, evening);
+  assert.equal(SRS.newLeftToday(daily, evening), 0);
+  const more = SRS.addNewBatch(daily, evening);
+  assert.equal(SRS.newLeftToday(more, evening), SRS.NEW_PER_DAY);
+  assert.equal(SRS.newLeftToday(daily, evening), 0, 'the original record is not modified');
+
+  assert.equal(SRS.newLeftToday(more, nextMorning), SRS.NEW_PER_DAY);
+  assert.deepEqual(SRS.countNewStarted(more, nextMorning), { day: '2026-01-02', started: 1, extra: 0 });
+});

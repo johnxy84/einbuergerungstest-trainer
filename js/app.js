@@ -50,8 +50,6 @@
     review: null,
   };
 
-  const NEW_PER_SESSION = 15;
-
   const TABS = [
     { id: 'study', label: '📖 Study', count: () => dueQuestions().length },
     { id: 'exam', label: '🎯 Mock exam' },
@@ -66,6 +64,7 @@
   ];
 
   const cards = () => state.progress.cards;
+  const isUnseen = (id) => !cards()[id] || cards()[id].seen === 0;
   const dueQuestions = () => SRS.dueQueue(QUESTIONS, cards(), Date.now());
   const current = () => state.pool[state.index];
   const inExam = () => state.mode === 'exam' && !!state.exam;
@@ -83,7 +82,7 @@
   function buildPool(mode) {
     const c = cards();
     switch (mode) {
-      case 'study': return SRS.studyQueue(QUESTIONS, c, Date.now(), NEW_PER_SESSION);
+      case 'study': return SRS.studyQueue(QUESTIONS, c, Date.now(), SRS.newLeftToday(state.progress.daily, Date.now()));
       case 'general': return QUESTIONS.filter((q) => q.scope === 'General');
       case 'bayern': return QUESTIONS.filter((q) => q.scope === 'Bayern');
       case 'new': return QUESTIONS.filter((q) => !c[q.id]);
@@ -121,6 +120,7 @@
         persist();
       }
     } else {
+      if (state.mode === 'study' && isUnseen(q.id)) state.progress.daily = SRS.countNewStarted(state.progress.daily, Date.now());
       cards()[q.id] = SRS.grade(cards()[q.id], ok, Date.now());
       persist();
       if (!ok && state.mode === 'study') {
@@ -129,6 +129,12 @@
       }
     }
     render();
+  }
+
+  function studyMore() {
+    state.progress.daily = SRS.addNewBatch(state.progress.daily, Date.now());
+    persist();
+    setMode('study');
   }
 
   // ---- mock exam -----------------------------------------------------------
@@ -342,7 +348,7 @@
     $('legend').replaceChildren(...segments.map((s) => h('li', {}, h('i', { class: 'swatch ' + s.cls }), h('span', { text: s.label }), h('b', { text: s.n }))));
 
     const modeNotes = {
-      study: 'Questions due for review come first, weakest first, followed by up to ' + NEW_PER_SESSION + ' new ones (Bavaria first). Missed questions return once at the end.',
+      study: 'Questions due for review come first, weakest first, followed by up to ' + SRS.NEW_PER_DAY + ' new ones a day (Bavaria first). Missed questions return once at the end. New questions left today: ' + SRS.newLeftToday(state.progress.daily, Date.now()) + '.',
       all: 'All 310 questions in catalogue order.',
       general: 'The 300 questions shared by every federal state.',
       bayern: 'The 10 Bavaria questions.',
@@ -374,19 +380,22 @@
     t.setAttribute('aria-pressed', String(showEn));
     t.classList.toggle('active', showEn);
     $('shuffle').disabled = state.mode === 'exam' || state.mode === 'study';
+    $('pager').hidden = !q;
 
     if (!q) {
       $('scope').textContent = '';
       $('counter').textContent = '0 / 0';
-      $('question').textContent = EMPTY_MESSAGES[state.mode] || 'No questions in this set.';
+      // Study runs dry before the catalogue does when today's new questions are used up.
+      const doneForToday = state.mode === 'study' && QUESTIONS.some((x) => isUnseen(x.id));
+      $('question').textContent = doneForToday
+        ? 'Done for today: nothing is due and you have started ' + SRS.today(state.progress.daily, Date.now()).started + ' new questions today. Come back tomorrow, or study ' + SRS.NEW_PER_DAY + ' more now.'
+        : EMPTY_MESSAGES[state.mode] || 'No questions in this set.';
       $('translation').classList.remove('show');
       $('qimg').hidden = true;
       $('imgCredit').hidden = true;
-      $('options').replaceChildren();
+      $('options').replaceChildren(...(doneForToday ? [h('button', { type: 'button', class: 'primary more', onclick: studyMore, text: 'Study ' + SRS.NEW_PER_DAY + ' more' })] : []));
       $('feedback').className = 'feedback';
       $('feedback').replaceChildren();
-      $('prev').disabled = true;
-      $('next').disabled = true;
       return;
     }
 

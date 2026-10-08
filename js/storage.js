@@ -7,7 +7,7 @@
   const MAX_EXAM_HISTORY = 30;
 
   function empty() {
-    return { version: 2, cards: {}, exams: [], activeExam: null, settings: { showEnglish: false } };
+    return { version: 2, cards: {}, exams: [], activeExam: null, daily: null, settings: { showEnglish: false } };
   }
 
   const num = (v, fallback) => (Number.isFinite(v) ? v : fallback);
@@ -23,6 +23,11 @@
       last: num(c.last, 0),
       lastOk: typeof c.lastOk === 'boolean' ? c.lastOk : null,
     };
+  }
+
+  function cleanDaily(d) {
+    if (!d || typeof d.day !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(d.day)) return null;
+    return { day: d.day, started: Math.max(0, Math.trunc(num(d.started, 0))), extra: Math.max(0, Math.trunc(num(d.extra, 0))) };
   }
 
   function cleanExam(e, byId) {
@@ -63,6 +68,7 @@
           .slice(-MAX_EXAM_HISTORY);
       }
       p.activeExam = cleanExam(raw.activeExam, byId);
+      p.daily = cleanDaily(raw.daily);
       if (raw.settings && typeof raw.settings.showEnglish === 'boolean') p.settings.showEnglish = raw.settings.showEnglish;
       return p;
     }

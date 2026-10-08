@@ -8,6 +8,7 @@
   const MAX_BOX = BOX_DAYS.length - 1;
   const MASTERED_BOX = 4;
   const RETRY_DELAY_MS = 10 * 60 * 1000;
+  const NEW_PER_DAY = 15;
 
   function newCard() {
     return { box: 0, due: 0, seen: 0, right: 0, wrong: 0, last: 0, lastOk: null };
@@ -57,6 +58,33 @@
     return due.concat(fresh.slice(0, newLimit));
   }
 
+  // Local calendar date, so the daily allowance of new questions starts over at the learner's midnight.
+  function dayKey(now) {
+    const d = new Date(now);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  // Today's record of new questions started in Study, plus extra batches the learner asked for. A record from an earlier day starts over.
+  function today(daily, now) {
+    const day = dayKey(now);
+    return daily && daily.day === day ? daily : { day, started: 0, extra: 0 };
+  }
+
+  function newLeftToday(daily, now) {
+    const t = today(daily, now);
+    return Math.max(0, NEW_PER_DAY + t.extra - t.started);
+  }
+
+  function countNewStarted(daily, now) {
+    const t = today(daily, now);
+    return Object.assign({}, t, { started: t.started + 1 });
+  }
+
+  function addNewBatch(daily, now) {
+    const t = today(daily, now);
+    return Object.assign({}, t, { extra: t.extra + NEW_PER_DAY });
+  }
+
   // boxes[0] holds cards that were missed last time and need relearning; unseen questions are counted separately.
   function distribution(questions, cards) {
     const out = { unseen: 0, boxes: new Array(BOX_DAYS.length).fill(0) };
@@ -74,5 +102,5 @@
     return days === 1 ? 'next review in 1 day' : 'next review in ' + days + ' days';
   }
 
-  return { DAY_MS, BOX_DAYS, MAX_BOX, MASTERED_BOX, RETRY_DELAY_MS, newCard, grade, postpone, isDue, isMastered, isMistake, dueQueue, studyQueue, distribution, describeInterval };
+  return { DAY_MS, BOX_DAYS, MAX_BOX, MASTERED_BOX, RETRY_DELAY_MS, NEW_PER_DAY, newCard, grade, postpone, isDue, isMastered, isMistake, dueQueue, studyQueue, dayKey, today, newLeftToday, countNewStarted, addNewBatch, distribution, describeInterval };
 });
