@@ -3,8 +3,8 @@
   else root.Exam = factory();
 })(this, function () {
   const GENERAL_COUNT = 30;
-  const BAYERN_COUNT = 3;
-  const TOTAL = GENERAL_COUNT + BAYERN_COUNT;
+  const STATE_COUNT = 3;
+  const TOTAL = GENERAL_COUNT + STATE_COUNT;
   const PASS_MARK = 17;
   const DURATION_MS = 60 * 60 * 1000;
 
@@ -19,8 +19,9 @@
 
   function build(questions, rng) {
     rng = rng || Math.random;
-    const pick = (scope, n) => shuffle(questions.filter((q) => q.scope === scope), rng).slice(0, n);
-    return shuffle(pick('General', GENERAL_COUNT).concat(pick('Bayern', BAYERN_COUNT)), rng).map((q) => q.id);
+    const pick = (matches, n) => shuffle(questions.filter(matches), rng).slice(0, n);
+    const general = (q) => q.scope === 'General';
+    return shuffle(pick(general, GENERAL_COUNT).concat(pick((q) => !general(q), STATE_COUNT)), rng).map((q) => q.id);
   }
 
   function start(questions, now, rng) {
@@ -44,5 +45,5 @@
     return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
   }
 
-  return { GENERAL_COUNT, BAYERN_COUNT, TOTAL, PASS_MARK, DURATION_MS, shuffle, build, start, score, remainingMs, formatClock };
+  return { GENERAL_COUNT, STATE_COUNT, TOTAL, PASS_MARK, DURATION_MS, shuffle, build, start, score, remainingMs, formatClock };
 });

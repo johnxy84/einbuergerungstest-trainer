@@ -5,9 +5,17 @@
   const KEY = 'einbuergerungstest.progress.v2';
   const LEGACY_KEY = 'einb_offline_progress';
   const MAX_EXAM_HISTORY = 30;
+  // Progress saved before state support was Bavaria-only.
+  const LEGACY_STATE = 'BY';
 
+  // state stays null until the learner picks one, so the app knows to ask.
   function empty() {
-    return { version: 2, cards: {}, exams: [], activeExam: null, daily: null, settings: { showEnglish: false } };
+    return { version: 2, cards: {}, exams: [], activeExam: null, daily: null, settings: { showEnglish: false, state: null } };
+  }
+
+  // Every scope other than General is a state code, so the catalogue itself says which codes are valid.
+  function stateCodes(byId) {
+    return new Set(Object.values(byId).map((q) => q.scope).filter((scope) => scope !== 'General'));
   }
 
   const num = (v, fallback) => (Number.isFinite(v) ? v : fallback);
@@ -51,6 +59,7 @@
       p.cards[id] = SRS.grade(SRS.newCard(), choice === q.correct, now);
     }
     if (typeof raw.showEnglish === 'boolean') p.settings.showEnglish = raw.showEnglish;
+    p.settings.state = LEGACY_STATE;
     return p;
   }
 
@@ -69,7 +78,9 @@
       }
       p.activeExam = cleanExam(raw.activeExam, byId);
       p.daily = cleanDaily(raw.daily);
-      if (raw.settings && typeof raw.settings.showEnglish === 'boolean') p.settings.showEnglish = raw.settings.showEnglish;
+      const settings = raw.settings || {};
+      if (typeof settings.showEnglish === 'boolean') p.settings.showEnglish = settings.showEnglish;
+      p.settings.state = stateCodes(byId).has(settings.state) ? settings.state : LEGACY_STATE;
       return p;
     }
     if (raw.answers || raw.mistakes) return fromV1(raw, byId, now);

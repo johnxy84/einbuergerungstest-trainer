@@ -38,6 +38,45 @@ test('English translations are off by default', () => {
   assert.equal(Store.empty().settings.showEnglish, false);
 });
 
+const fixture = Object.fromEntries([
+  { id: 1, scope: 'General', correct: 0, options: ['a', 'b', 'c', 'd'] },
+  { id: 2, scope: 'BY', correct: 0, options: ['a', 'b', 'c', 'd'] },
+  { id: 3, scope: 'NW', correct: 0, options: ['a', 'b', 'c', 'd'] },
+].map((q) => [q.id, q]));
+
+test('a new store has no state yet, so the app asks for one', () => {
+  assert.equal(Store.empty().settings.state, null);
+  const store = Store.createStore(memoryStorage(), fixture, () => NOW);
+  assert.equal(store.load().settings.state, null);
+});
+
+test('progress saved before state support is treated as Bavaria', () => {
+  assert.equal(Store.normalize({ version: 2 }, fixture, NOW).settings.state, 'BY');
+  assert.equal(Store.normalize({ version: 2, settings: { showEnglish: true } }, fixture, NOW).settings.state, 'BY');
+  assert.equal(Store.normalize({ version: 2, settings: { state: null } }, fixture, NOW).settings.state, 'BY');
+  assert.equal(Store.normalize({ answers: { 1: 0 } }, fixture, NOW).settings.state, 'BY');
+
+  const legacy = memoryStorage({ [Store.LEGACY_KEY]: JSON.stringify({ answers: { 1: 0 }, mistakes: [] }) });
+  assert.equal(Store.createStore(legacy, fixture, () => NOW).load().settings.state, 'BY');
+});
+
+test('a saved state is kept when the catalogue knows it and replaced by Bavaria otherwise', () => {
+  assert.equal(Store.normalize({ version: 2, settings: { state: 'NW' } }, fixture, NOW).settings.state, 'NW');
+  assert.equal(Store.normalize({ version: 2, settings: { state: 'XX' } }, fixture, NOW).settings.state, 'BY');
+  assert.equal(Store.normalize({ version: 2, settings: { state: 'General' } }, fixture, NOW).settings.state, 'BY');
+  assert.equal(Store.normalize({ version: 2, settings: { state: 7 } }, fixture, NOW).settings.state, 'BY');
+});
+
+test('the chosen state survives an export and a save', () => {
+  const p = Store.empty();
+  p.settings.state = 'NW';
+  assert.equal(Store.normalize(JSON.parse(Store.serialize(p, NOW)), fixture, NOW).settings.state, 'NW');
+
+  const storage = memoryStorage();
+  Store.createStore(storage, fixture, () => NOW).save(p);
+  assert.equal(Store.createStore(storage, fixture, () => NOW).load().settings.state, 'NW');
+});
+
 test('a second-version export round-trips', () => {
   const p = Store.empty();
   p.cards[5] = SRS.grade(SRS.newCard(), true, NOW);

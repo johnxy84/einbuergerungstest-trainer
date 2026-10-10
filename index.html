@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark light">
-  <meta name="description" content="Offline trainer for the German Einbürgerungstest: all 310 BAMF questions for Bavaria with English translations, explanations, spaced repetition and a timed mock exam.">
-  <title>Einbürgerungstest Trainer · Bayern</title>
+  <meta name="description" content="Offline trainer for the German Einbürgerungstest: the BAMF question catalogue for every federal state, with English translations, explanations, spaced repetition and a timed mock exam.">
+  <title>Einbürgerungstest Trainer</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -13,9 +13,10 @@
     <header class="top">
       <div>
         <h1>Einbürgerungstest Trainer</h1>
-        <p class="muted">All 310 questions for Bavaria · German with optional English translation · works offline</p>
+        <p class="muted" id="subline">Questions for every federal state · German with optional English translation · works offline</p>
       </div>
       <div class="top-actions">
+        <button type="button" id="openStatePicker" class="state-chip" aria-haspopup="dialog">📍 Choose your state</button>
         <button type="button" id="openGuide">ℹ️ How to study</button>
         <span class="badge">BAMF catalogue · 07.05.2025</span>
       </div>
@@ -115,8 +116,8 @@
         <ul>
           <li>The test has <strong>33 multiple-choice questions</strong>, each with four answers and one correct one.</li>
           <li>You get <strong>60 minutes</strong> and need <strong>at least 17 correct</strong> to pass.</li>
-          <li>30 questions come from the general pool of 300 that applies in every federal state. 3 come from your state's pool, here the <strong>10 Bavaria questions</strong>.</li>
-          <li>Every possible question is in this trainer. The exam only reuses them, so learning all 310 is enough.</li>
+          <li>30 questions come from the general pool of 300 that applies in every federal state. 3 come from the <strong>10 questions about your own federal state</strong>, which you choose with the 📍 button at the top.</li>
+          <li>Every possible question for your state is in this trainer. The exam only reuses them, so learning all 310 is enough.</li>
         </ul>
       </section>
 
@@ -124,7 +125,7 @@
         <h3>A simple routine</h3>
         <ol>
           <li><strong>Study</strong> every day. It shows what is due for review first, then 15 new questions. Clear the due ones before moving on.</li>
-          <li>Learn the <strong>10 Bavaria questions</strong> in the first days. They come first among the new ones.</li>
+          <li>Learn the <strong>10 questions for your state</strong> in the first days. They come first among the new ones.</li>
           <li>Take a <strong>Mock exam</strong> about once a week, and daily in the last week. Aim for 27 or more out of 33 so you have a safety margin over 17.</li>
           <li>With around 15 new questions a day you will have seen everything in about three weeks. Keep reviewing until the exam.</li>
         </ol>
@@ -135,7 +136,7 @@
         <dl class="defs">
           <dt>📖 Study</dt><dd>Your daily session. Due questions first (weakest first), then up to 15 new ones a day. A question you miss comes back once at the end of the session. When you are done for the day you can press <em>Study 15 more</em> to keep going.</dd>
           <dt>🎯 Mock exam</dt><dd>33 random questions in 60 minutes, like the real test. You can change answers until you press <em>Finish exam</em>, and the clock keeps running if you reload. When it hits zero the exam is submitted. Afterwards you can step through every question with the explanation.</dd>
-          <dt>📚 Browse…</dt><dd>Filters for looking things up: all questions in catalogue order, general only, Bavaria only, questions you have not seen yet, your mistakes, and the ones you have mastered.</dd>
+          <dt>📚 Browse…</dt><dd>Filters for looking things up: all questions in catalogue order, general only, your state only, questions you have not seen yet, your mistakes, and the ones you have mastered.</dd>
         </dl>
       </section>
 
@@ -180,6 +181,7 @@
         <h3>Good to know</h3>
         <ul>
           <li>This is an <strong>unofficial</strong> study aid. The German wording is what counts in the exam. The English translations and explanations are there to help you understand.</li>
+          <li>Your state decides which 10 state questions you get. Switching it keeps everything you have already answered, so you can switch back later without losing progress. It cannot be changed while a mock exam is running.</li>
           <li>The questions come from the BAMF catalogue dated 07.05.2025. A few answers depend on the date, such as the current Chancellor, the largest parliamentary groups and the population. Check them against the latest catalogue before your exam.</li>
           <li>Details about registering for the test and where to take it are handled by your local authority or test centre. This trainer does not cover them.</li>
         </ul>
@@ -187,12 +189,28 @@
     </div>
   </dialog>
 
+  <dialog id="statePicker" class="guide" aria-labelledby="statePickerTitle">
+    <div class="guide-head">
+      <h2 id="statePickerTitle">Which federal state will you take the test in?</h2>
+      <button type="button" id="closeStatePicker" aria-label="Close">✕</button>
+    </div>
+
+    <div class="guide-body">
+      <p>The Einbürgerungstest has 33 questions. 30 are the same everywhere, and 3 come from 10 questions about the federal state where you live or apply: its capital, flag, parliament, government and so on. We only show the 10 for your state, so you do not have to study the other 150.</p>
+      <p>You can change it any time. Your choice is stored only in this browser, and nothing is sent anywhere.</p>
+      <p class="state-locked" id="stateLocked" role="status" hidden>Finish or submit your exam first to switch state.</p>
+      <div class="state-grid" id="stateGrid" role="group" aria-label="Federal states"></div>
+    </div>
+  </dialog>
+
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
+  <script src="data/states.js"></script>
   <script src="data/questions.js"></script>
   <script src="data/explanations.js"></script>
   <script src="js/srs.js"></script>
   <script src="js/exam.js"></script>
+  <script src="js/catalogue.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/app.js"></script>
 </body>

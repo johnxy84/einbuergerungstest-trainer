@@ -1,10 +1,12 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const Exam = require('../js/exam.js');
+const Catalogue = require('../js/catalogue.js');
 const { loadGlobal } = require('../scripts/validate-data.js');
 
-const questions = loadGlobal('data/questions.js', 'QUESTIONS');
-const byId = Object.fromEntries(questions.map((q) => [q.id, q]));
+const all = loadGlobal('data/questions.js', 'QUESTIONS');
+const questions = Catalogue.forState(all, 'BY');
+const byId = Object.fromEntries(all.map((q) => [q.id, q]));
 
 function seeded(seed) {
   let s = seed;
@@ -14,12 +16,26 @@ function seeded(seed) {
   };
 }
 
-test('an exam has 30 distinct general and 3 distinct Bavaria questions', () => {
+test('an exam has 30 distinct general and 3 distinct questions of the learner\'s state', () => {
   const ids = Exam.build(questions, seeded(7));
   assert.equal(ids.length, Exam.TOTAL);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(ids.filter((id) => byId[id].scope === 'General').length, 30);
-  assert.equal(ids.filter((id) => byId[id].scope === 'Bayern').length, 3);
+  assert.equal(ids.filter((id) => byId[id].scope === 'BY').length, Exam.STATE_COUNT);
+});
+
+test('an exam built from one state\'s catalogue never contains another state\'s questions', () => {
+  const general = Array.from({ length: 40 }, (_, i) => ({ id: i + 1, scope: 'General' }));
+  const fixture = general.concat(
+    Array.from({ length: 10 }, (_, i) => ({ id: 301 + i, scope: 'BY' })),
+    Array.from({ length: 10 }, (_, i) => ({ id: 391 + i, scope: 'NW' })),
+  );
+  for (let seed = 1; seed <= 20; seed++) {
+    const ids = Exam.build(Catalogue.forState(fixture, 'NW'), seeded(seed));
+    assert.equal(ids.filter((id) => id >= 391).length, 3);
+    assert.equal(ids.filter((id) => id >= 301 && id < 391).length, 0);
+    assert.equal(ids.filter((id) => id <= 40).length, 30);
+  }
 });
 
 test('different seeds give different exams', () => {

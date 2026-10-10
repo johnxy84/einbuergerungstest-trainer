@@ -3,6 +3,7 @@
 
   const QUESTIONS = window.QUESTIONS;
   const EXPLANATIONS = window.EXPLANATIONS;
+  const STATES = window.STATES;
   const BY_ID = Object.fromEntries(QUESTIONS.map((q) => [q.id, q]));
   const LETTERS = 'ABCD';
   const EMPTY_MESSAGES = {
@@ -50,22 +51,40 @@
     review: null,
   };
 
+  // Only the learner's own state is studied, but cards, stored exams and imports for any state still resolve through BY_ID.
+  let catalogueFor;
+  let catalogueList = [];
+  function catalogue() {
+    const code = state.progress.settings.state;
+    if (catalogueFor !== code) {
+      catalogueList = Catalogue.forState(QUESTIONS, code);
+      catalogueFor = code;
+    }
+    return catalogueList;
+  }
+
+  const isGeneral = (q) => q.scope === Catalogue.GENERAL;
+  const stateQuestions = () => catalogue().filter((q) => !isGeneral(q));
+  const stateInfo = () => Catalogue.stateByCode(STATES, state.progress.settings.state);
+  const stateName = () => (stateInfo() ? stateInfo().name : 'your state');
+  const scopeName = (scope) => { const s = Catalogue.stateByCode(STATES, scope); return s ? s.name : scope; };
+
   const TABS = [
     { id: 'study', label: '📖 Study', count: () => dueQuestions().length },
     { id: 'exam', label: '🎯 Mock exam' },
   ];
   const BROWSE = [
-    { id: 'all', label: 'All 310' },
-    { id: 'general', label: 'General 300' },
-    { id: 'bayern', label: 'Bayern 10' },
-    { id: 'new', label: 'New', count: () => QUESTIONS.filter((q) => !state.progress.cards[q.id]).length },
-    { id: 'mistakes', label: 'Mistakes', count: () => QUESTIONS.filter((q) => SRS.isMistake(state.progress.cards[q.id])).length },
-    { id: 'mastered', label: 'Mastered', count: () => QUESTIONS.filter((q) => SRS.isMastered(state.progress.cards[q.id])).length },
+    { id: 'all', label: () => 'All ' + catalogue().length },
+    { id: 'general', label: () => 'General ' + catalogue().filter(isGeneral).length },
+    { id: 'state', label: () => stateName() + ' ' + stateQuestions().length },
+    { id: 'new', label: () => 'New', count: () => catalogue().filter((q) => !state.progress.cards[q.id]).length },
+    { id: 'mistakes', label: () => 'Mistakes', count: () => catalogue().filter((q) => SRS.isMistake(state.progress.cards[q.id])).length },
+    { id: 'mastered', label: () => 'Mastered', count: () => catalogue().filter((q) => SRS.isMastered(state.progress.cards[q.id])).length },
   ];
 
   const cards = () => state.progress.cards;
   const isUnseen = (id) => !cards()[id] || cards()[id].seen === 0;
-  const dueQuestions = () => SRS.dueQueue(QUESTIONS, cards(), Date.now());
+  const dueQuestions = () => SRS.dueQueue(catalogue(), cards(), Date.now());
   const current = () => state.pool[state.index];
   const inExam = () => state.mode === 'exam' && !!state.exam;
   const persist = () => { if (!store.save(state.progress)) toast('Could not save progress: browser storage is unavailable.'); };
@@ -82,13 +101,13 @@
   function buildPool(mode) {
     const c = cards();
     switch (mode) {
-      case 'study': return SRS.studyQueue(QUESTIONS, c, Date.now(), SRS.newLeftToday(state.progress.daily, Date.now()));
-      case 'general': return QUESTIONS.filter((q) => q.scope === 'General');
-      case 'bayern': return QUESTIONS.filter((q) => q.scope === 'Bayern');
-      case 'new': return QUESTIONS.filter((q) => !c[q.id]);
-      case 'mistakes': return QUESTIONS.filter((q) => SRS.isMistake(c[q.id]));
-      case 'mastered': return QUESTIONS.filter((q) => SRS.isMastered(c[q.id]));
-      default: return QUESTIONS.slice();
+      case 'study': return SRS.studyQueue(catalogue(), c, Date.now(), SRS.newLeftToday(state.progress.daily, Date.now()));
+      case 'general': return catalogue().filter(isGeneral);
+      case 'state': return stateQuestions();
+      case 'new': return catalogue().filter((q) => !c[q.id]);
+      case 'mistakes': return catalogue().filter((q) => SRS.isMistake(c[q.id]));
+      case 'mastered': return catalogue().filter((q) => SRS.isMastered(c[q.id]));
+      default: return catalogue().slice();
     }
   }
 
@@ -141,7 +160,7 @@
 
   function startExam() {
     state.review = null;
-    state.exam = Exam.start(QUESTIONS, Date.now());
+    state.exam = Exam.start(catalogue(), Date.now());
     state.progress.activeExam = state.exam;
     persist();
   }
@@ -225,7 +244,7 @@
     }
     const select = $('browse');
     BROWSE.forEach((b, i) => {
-      select.options[i + 1].textContent = b.label + (b.count ? ' (' + b.count() + ')' : '');
+      select.options[i + 1].textContent = b.label() + (b.count ? ' (' + b.count() + ')' : '');
     });
     const browsing = BROWSE.some((b) => b.id === state.mode);
     select.value = browsing ? state.mode : '';
@@ -329,17 +348,18 @@
 
   function renderStats() {
     const c = cards();
-    const all = Object.values(c);
+    const mine = catalogue();
+    const all = mine.map((q) => c[q.id]).filter(Boolean);
     const seen = all.filter((x) => x.seen > 0).length;
     const right = all.reduce((n, x) => n + x.right, 0);
     const wrong = all.reduce((n, x) => n + x.wrong, 0);
-    $('seen').textContent = seen + ' / ' + QUESTIONS.length;
+    $('seen').textContent = seen + ' / ' + mine.length;
     $('dueCount').textContent = dueQuestions().length;
-    $('masteredCount').textContent = QUESTIONS.filter((q) => SRS.isMastered(c[q.id])).length;
-    $('mistakeCount').textContent = QUESTIONS.filter((q) => SRS.isMistake(c[q.id])).length;
+    $('masteredCount').textContent = mine.filter((q) => SRS.isMastered(c[q.id])).length;
+    $('mistakeCount').textContent = mine.filter((q) => SRS.isMistake(c[q.id])).length;
     $('accuracy').textContent = right + wrong ? Math.round((right / (right + wrong)) * 100) + '%' : '—';
 
-    const dist = SRS.distribution(QUESTIONS, c);
+    const dist = SRS.distribution(mine, c);
     const segments = [{ cls: 'seg-new', label: 'New', n: dist.unseen }];
     dist.boxes.forEach((n, box) => {
       segments.push({ cls: 'seg-b' + box, label: box === 0 ? 'Relearn' : 'Box ' + box + ' (' + SRS.BOX_DAYS[box] + 'd)', n });
@@ -348,14 +368,14 @@
     $('legend').replaceChildren(...segments.map((s) => h('li', {}, h('i', { class: 'swatch ' + s.cls }), h('span', { text: s.label }), h('b', { text: s.n }))));
 
     const modeNotes = {
-      study: 'Questions due for review come first, weakest first, followed by up to ' + SRS.NEW_PER_DAY + ' new ones a day (Bavaria first). Missed questions return once at the end. New questions left today: ' + SRS.newLeftToday(state.progress.daily, Date.now()) + '.',
-      all: 'All 310 questions in catalogue order.',
-      general: 'The 300 questions shared by every federal state.',
-      bayern: 'The 10 Bavaria questions.',
+      study: 'Questions due for review come first, weakest first, followed by up to ' + SRS.NEW_PER_DAY + ' new ones a day (your state first). Missed questions return once at the end. New questions left today: ' + SRS.newLeftToday(state.progress.daily, Date.now()) + '.',
+      all: 'All ' + mine.length + ' questions in catalogue order.',
+      general: 'The ' + mine.filter(isGeneral).length + ' questions shared by every federal state.',
+      state: 'The ' + stateQuestions().length + ' questions for ' + stateName() + '.',
       new: 'Questions you have not answered yet.',
       mistakes: 'Questions you got wrong the last time.',
       mastered: 'Answered correctly and scheduled at least 16 days ahead.',
-      exam: Exam.GENERAL_COUNT + ' general + ' + Exam.BAYERN_COUNT + ' Bavaria questions in 60 minutes. Answers can be changed until you finish.',
+      exam: Exam.GENERAL_COUNT + ' general + ' + Exam.STATE_COUNT + ' ' + stateName() + ' questions in 60 minutes. Answers can be changed until you finish.',
     };
     $('mode').textContent = modeNotes[state.mode];
 
@@ -367,7 +387,17 @@
     $('history').replaceChildren(...(items.length ? items : [h('li', { class: 'small muted', text: 'No mock exams yet.' })]));
   }
 
+  function renderHeader() {
+    const info = stateInfo();
+    const chip = $('openStatePicker');
+    chip.textContent = '📍 ' + (info ? info.name : 'Choose your state');
+    chip.setAttribute('aria-label', info ? 'Federal state: ' + Catalogue.label(info) + '. Change' : 'Choose your federal state');
+    if ($('statePicker').open) renderStatePicker();
+    $('subline').textContent = (info ? catalogue().length + ' questions for ' + info.name : 'Questions for every federal state') + ' · German with optional English translation · works offline';
+  }
+
   function render() {
+    renderHeader();
     renderTabs();
     renderStats();
     renderExamBar();
@@ -386,7 +416,7 @@
       $('scope').textContent = '';
       $('counter').textContent = '0 / 0';
       // Study runs dry before the catalogue does when today's new questions are used up.
-      const doneForToday = state.mode === 'study' && QUESTIONS.some((x) => isUnseen(x.id));
+      const doneForToday = state.mode === 'study' && catalogue().some((x) => isUnseen(x.id));
       $('question').textContent = doneForToday
         ? 'Done for today: nothing is due and you have started ' + SRS.today(state.progress.daily, Date.now()).started + ' new questions today. Come back tomorrow, or study ' + SRS.NEW_PER_DAY + ' more now.'
         : EMPTY_MESSAGES[state.mode] || 'No questions in this set.';
@@ -399,7 +429,7 @@
       return;
     }
 
-    $('scope').textContent = q.scope === 'Bayern' ? '🟦 Bayern' : '🇩🇪 General';
+    $('scope').textContent = isGeneral(q) ? '🇩🇪 General' : '📍 ' + scopeName(q.scope);
     $('counter').textContent = (state.index + 1) + ' / ' + state.pool.length + (state.mode === 'study' && state.retryAt.has(state.index) ? ' · retry' : '');
     $('question').textContent = q.q;
 
@@ -463,6 +493,7 @@
       state.review = null;
       persist();
       setMode(state.exam ? 'exam' : defaultMode());
+      updateIntro();
       toast('Progress imported: ' + Object.keys(imported.cards).length + ' questions.');
     };
     reader.readAsText(file);
@@ -470,9 +501,10 @@
 
   function resetProgress() {
     if (!confirm('Reset all saved progress? This cannot be undone.')) return;
-    const showEnglish = state.progress.settings.showEnglish;
+    const { showEnglish, state: stateCode } = state.progress.settings;
     state.progress = Store.empty();
     state.progress.settings.showEnglish = showEnglish;
+    state.progress.settings.state = stateCode;
     state.exam = null;
     state.review = null;
     persist();
@@ -538,7 +570,61 @@
     $('introDismiss').addEventListener('click', dismissIntro);
     $('closeGuide').addEventListener('click', close);
     dialog.addEventListener('click', (e) => { if (e.target === dialog) close(); });
-    $('intro').hidden = introDismissed() || Object.keys(cards()).length > 0;
+    updateIntro();
+  }
+
+  // The first-visit callout waits for the state picker so the two never compete.
+  function updateIntro() {
+    $('intro').hidden = introDismissed() || Object.keys(cards()).length > 0 || !state.progress.settings.state;
+  }
+
+  // ---- federal state picker ------------------------------------------------
+
+  function chooseState(code) {
+    if (state.exam || code === state.progress.settings.state) return;
+    state.progress.settings.state = code;
+    state.review = null;
+    persist();
+    setMode(defaultMode());
+  }
+
+  function renderStatePicker() {
+    const locked = !!state.exam;
+    const chosen = state.progress.settings.state;
+    $('stateLocked').hidden = !locked;
+    $('closeStatePicker').hidden = !chosen;
+    $('stateGrid').replaceChildren(...STATES.map((s) => h('button', {
+      type: 'button',
+      class: 'state-option',
+      disabled: locked,
+      'aria-current': s.code === chosen ? 'true' : null,
+      onclick: () => {
+        chooseState(s.code);
+        $('statePicker').close();
+        updateIntro();
+      },
+    },
+    h('span', { class: 'state-name', text: s.name + (s.code === chosen ? ' ✓' : '') }),
+    s.en !== s.name ? h('span', { class: 'state-en', lang: 'en', text: s.en }) : null)));
+  }
+
+  function bindStatePicker() {
+    const dialog = $('statePicker');
+    const open = () => {
+      if (dialog.open) return;
+      renderStatePicker();
+      if (typeof dialog.showModal === 'function') dialog.showModal();
+      else dialog.setAttribute('open', '');
+      dialog.querySelector('.guide-body').scrollTop = 0;
+    };
+    const mustChoose = () => !state.progress.settings.state;
+    $('openStatePicker').addEventListener('click', open);
+    $('closeStatePicker').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (e) => { if (e.target === dialog && !mustChoose()) dialog.close(); });
+    dialog.addEventListener('cancel', (e) => { if (mustChoose()) e.preventDefault(); });
+    // Browsers may close a dialog on a repeated Escape even when cancel was prevented.
+    dialog.addEventListener('close', () => { if (mustChoose()) open(); });
+    if (mustChoose()) open();
   }
 
   function init() {
@@ -550,6 +636,7 @@
     } else {
       setMode(state.exam ? 'exam' : defaultMode());
     }
+    bindStatePicker();
     setInterval(tick, 500);
     if ('serviceWorker' in navigator && location.protocol.startsWith('http') && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
       navigator.serviceWorker.register('sw.js').catch(() => {});

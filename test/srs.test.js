@@ -83,10 +83,10 @@ test('postponing a relearned card keeps its box but delays the next review', () 
   assert.equal(missed.due, NOW, 'the original card is not modified');
 });
 
-test('the study queue lists due cards, then new Bavaria questions, then new general ones, capped', () => {
+test('the study queue lists due cards, then new state questions, then new general ones, capped', () => {
   const qs = [
-    { id: 1, scope: 'General' }, { id: 2, scope: 'General' }, { id: 3, scope: 'Bayern' },
-    { id: 4, scope: 'General' }, { id: 5, scope: 'Bayern' }, { id: 6, scope: 'General' },
+    { id: 1, scope: 'General' }, { id: 2, scope: 'General' }, { id: 3, scope: 'BY' },
+    { id: 4, scope: 'General' }, { id: 5, scope: 'BY' }, { id: 6, scope: 'General' },
   ];
   const cards = {
     1: { ...SRS.newCard(), seen: 1, box: 1, due: NOW - 5 },

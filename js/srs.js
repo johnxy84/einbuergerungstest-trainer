@@ -50,11 +50,11 @@
       .sort((a, b) => cards[a.id].box - cards[b.id].box || cards[a.id].due - cards[b.id].due);
   }
 
-  // Due cards first, then up to newLimit unseen questions with the Bavaria ones ahead of the general pool.
+  // Due cards first, then up to newLimit unseen questions with the state-specific ones ahead of the general pool.
   function studyQueue(questions, cards, now, newLimit) {
     const due = dueQueue(questions, cards, now);
     const unseen = questions.filter((q) => !cards[q.id] || cards[q.id].seen === 0);
-    const fresh = unseen.filter((q) => q.scope === 'Bayern').concat(unseen.filter((q) => q.scope !== 'Bayern'));
+    const fresh = unseen.filter((q) => q.scope !== 'General').concat(unseen.filter((q) => q.scope === 'General'));
     return due.concat(fresh.slice(0, newLimit));
   }
 
