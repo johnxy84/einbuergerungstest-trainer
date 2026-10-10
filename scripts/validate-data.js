@@ -33,6 +33,7 @@ function validate() {
   const errors = [];
   const questions = loadGlobal('data/questions.js', 'QUESTIONS');
   const explanations = loadGlobal('data/explanations.js', 'EXPLANATIONS');
+  const explanationsDe = loadGlobal('data/explanations_de.js', 'EXPLANATIONS_DE');
   const states = loadGlobal('data/states.js', 'STATES');
   const fail = (msg) => errors.push(msg);
 
@@ -72,6 +73,7 @@ function validate() {
     if (new Set(q.options).size !== q.options.length) fail(tag + 'duplicate options');
     if (q.image && !fs.existsSync(path.join(root, q.image))) fail(tag + 'missing image ' + q.image);
     if (!explanations[q.id]) fail(tag + 'missing explanation');
+    if (!explanationsDe[q.id]) fail(tag + 'missing German explanation');
 
     const own = byCode.get(q.scope);
     if (own) {
@@ -83,6 +85,7 @@ function validate() {
   }
   for (let i = 1; i <= total; i++) if (!seen.has(i)) fail('Q' + i + ': id missing');
   for (const id of Object.keys(explanations)) if (!seen.has(Number(id))) fail('explanation for unknown id ' + id);
+  for (const id of Object.keys(explanationsDe)) if (!seen.has(Number(id))) fail('German explanation for unknown id ' + id);
 
   const images = fs.readdirSync(path.join(root, 'images')).filter((f) => f.endsWith('.jpg'));
   const referenced = new Set(questions.filter((q) => q.image).map((q) => path.basename(q.image)));

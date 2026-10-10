@@ -3,6 +3,7 @@
 
   const QUESTIONS = window.QUESTIONS;
   const EXPLANATIONS = window.EXPLANATIONS;
+  const EXPLANATIONS_DE = window.EXPLANATIONS_DE;
   const STATES = window.STATES;
   const BY_ID = Object.fromEntries(QUESTIONS.map((q) => [q.id, q]));
   const LETTERS = 'ABCD';
@@ -343,7 +344,8 @@
       fb.append(h('div', {}, 'Correct answer: ', h('strong', { lang: 'de', text: LETTERS[q.correct] + ') ' + q.options[q.correct] })));
       if (state.progress.settings.showEnglish) fb.append(h('div', { class: 'small', lang: 'en', text: q.en_options[q.correct] }));
     }
-    fb.append(h('p', { class: 'why' }, h('strong', { text: 'Why: ' }), EXPLANATIONS[q.id]));
+    fb.append(h('p', { class: 'why', lang: 'de' }, h('strong', { text: 'Warum: ' }), EXPLANATIONS_DE[q.id]));
+    if (state.progress.settings.showEnglish) fb.append(h('p', { class: 'why en', lang: 'en' }, h('strong', { text: 'Why: ' }), EXPLANATIONS[q.id]));
   }
 
   function renderStats() {

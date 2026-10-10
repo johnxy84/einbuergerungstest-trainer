@@ -1,6 +1,6 @@
 // Offline support: serve from cache, refresh the cache in the background.
 // Bump CACHE when the precache list changes shape.
-const CACHE = 'einbuergerungstest-v3';
+const CACHE = 'einbuergerungstest-v4';
 const PRECACHE = [
   './',
   'index.html',
@@ -13,6 +13,7 @@ const PRECACHE = [
   'data/states.js',
   'data/questions.js',
   'data/explanations.js',
+  'data/explanations_de.js',
   'images/q21.jpg',
   'images/q55.jpg',
   'images/q130.jpg',
