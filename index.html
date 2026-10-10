@@ -6,6 +6,10 @@
   <meta name="color-scheme" content="dark light">
   <meta name="description" content="Offline trainer for the German Einbürgerungstest: the BAMF question catalogue for every federal state, with English translations, explanations, spaced repetition and a timed mock exam.">
   <title>Einbürgerungstest Trainer</title>
+  <script>
+    // Apply a saved light/dark choice before the first paint. With no choice the system setting decides.
+    try { var t = localStorage.getItem('einbuergerungstest.theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -17,6 +21,7 @@
       </div>
       <div class="top-actions">
         <button type="button" id="openStatePicker" class="state-chip" aria-haspopup="dialog">📍 Choose your state</button>
+        <button type="button" id="themeToggle"></button>
         <button type="button" id="openGuide">ℹ️ How to study</button>
         <span class="badge">BAMF catalogue · 07.05.2025</span>
       </div>

@@ -563,6 +563,43 @@
     try { return window.localStorage.getItem(INTRO_KEY) === '1'; } catch (_) { return false; }
   }
 
+  // ---- theme: follow the system unless the learner picks light or dark ---------
+
+  const THEME_KEY = 'einbuergerungstest.theme';
+  const THEMES = [
+    { id: 'system', label: '🖥️ Theme: System' },
+    { id: 'light', label: '☀️ Theme: Light' },
+    { id: 'dark', label: '🌙 Theme: Dark' },
+  ];
+
+  function savedTheme() {
+    try {
+      const t = window.localStorage.getItem(THEME_KEY);
+      return t === 'light' || t === 'dark' ? t : 'system';
+    } catch (_) { return 'system'; }
+  }
+
+  function applyTheme(id) {
+    if (id === 'system') delete document.documentElement.dataset.theme;
+    else document.documentElement.dataset.theme = id;
+    const t = THEMES.find((x) => x.id === id);
+    $('themeToggle').textContent = t.label;
+    $('themeToggle').title = 'Switch between the system setting, light and dark. Saved on this device.';
+  }
+
+  function bindTheme() {
+    let current = savedTheme();
+    applyTheme(current);
+    $('themeToggle').addEventListener('click', () => {
+      current = THEMES[(THEMES.findIndex((x) => x.id === current) + 1) % THEMES.length].id;
+      applyTheme(current);
+      try {
+        if (current === 'system') window.localStorage.removeItem(THEME_KEY);
+        else window.localStorage.setItem(THEME_KEY, current);
+      } catch (_) { toast('Could not save the theme: browser storage is unavailable.'); }
+    });
+  }
+
   function bindGuide() {
     const dialog = $('guide');
     const open = () => {
@@ -640,6 +677,7 @@
   function init() {
     bind();
     bindGuide();
+    bindTheme();
     state.exam = state.progress.activeExam;
     if (state.exam && Exam.remainingMs(state.exam, Date.now()) <= 0) {
       finishExam(true);

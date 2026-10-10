@@ -17,8 +17,9 @@
   color-scheme: dark;
 }
 
+/* Light palette: used when the system prefers light (unless dark is chosen) or when light is chosen explicitly. */
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme="dark"]) {
     --bg: #f6f8fa;
     --panel: #ffffff;
     --panel-2: #eef1f5;
@@ -36,6 +37,25 @@
     --track: #dde3ea;
     color-scheme: light;
   }
+}
+
+:root[data-theme="light"] {
+  --bg: #f6f8fa;
+  --panel: #ffffff;
+  --panel-2: #eef1f5;
+  --border: #d0d7de;
+  --text: #1f2328;
+  --muted: #59636e;
+  --accent: #0b5fd6;
+  --on-accent: #ffffff;
+  --good: #1a7f37;
+  --bad: #cf222e;
+  --warn: #9a6700;
+  --translation-bg: #eef4fc;
+  --translation-text: #26405f;
+  --letter-bg: #e4e9ef;
+  --track: #dde3ea;
+  color-scheme: light;
 }
 
 * { box-sizing: border-box; }

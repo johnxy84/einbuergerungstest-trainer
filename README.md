@@ -16,6 +16,7 @@ A static, offline-capable trainer for the German naturalisation test (Einbürger
 - Spaced repetition (Leitner boxes): correct answers move a question to a longer review interval (1, 3, 7, 16, 35 days), a wrong answer sends it back to be relearned. The **Study** tab serves what is due first (weakest boxes first), then up to 15 new questions a day, your state's first. Once the day's new questions are done, a **Study 15 more** button adds another batch. The **Browse** menu filters the catalogue (all, general, your state, new, mistakes, mastered).
 - Timed mock exam: 33 questions (30 general, 3 from your state), 60 minutes, pass mark 17. Answers can be changed until you finish, the clock survives a page reload, and the exam is submitted automatically when time runs out.
 - A built-in "How to study" guide for newcomers: the test format, a daily routine, how the review schedule works and study tips. It opens from the header and is offered once to first-time visitors.
+- Light and dark themes follow your system setting by default; a button in the header switches between System, Light and Dark and remembers the choice on that device.
 - Progress is stored in the browser's `localStorage`. Export and import it as JSON to back it up or move devices; exports from the original single-file trainer can be imported too.
 
 ## Run locally
