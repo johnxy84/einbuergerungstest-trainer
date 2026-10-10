@@ -34,8 +34,11 @@ test('a first-version export is regraded against the current answer key', () => 
   assert.ok(!SRS.isDue(p.cards[1], NOW));
 });
 
-test('English translations are off by default', () => {
+test('English translations are off by default, English explanations are on', () => {
   assert.equal(Store.empty().settings.showEnglish, false);
+  assert.equal(Store.empty().settings.explainEnglish, true);
+  assert.equal(Store.normalize({ version: 2, settings: { explainEnglish: false } }, fixture, NOW).settings.explainEnglish, false);
+  assert.equal(Store.normalize({ version: 2, settings: { explainEnglish: 'no' } }, fixture, NOW).settings.explainEnglish, true);
 });
 
 const fixture = Object.fromEntries([

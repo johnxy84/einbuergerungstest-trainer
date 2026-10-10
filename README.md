@@ -12,7 +12,7 @@ A static, offline-capable trainer for the German naturalisation test (Einbürger
 
 - A state picker for all 16 federal states, asked on the first visit and changeable from the header any time. It only decides which 10 state questions you see; there is no location detection, and the choice is stored in the browser. Switching keeps all saved progress.
 - 310 questions per learner (300 general plus the 10 of the chosen state; 460 in the full catalogue), including the figure questions, with English translations that are off by default and can be switched on with one click.
-- A short explanation after each answer, in simple German, with the English version added when the translation is switched on.
+- A short explanation after each answer, in simple German, with the English version below it, which you can hide with one tap (separate from the English translation switch).
 - Spaced repetition (Leitner boxes): correct answers move a question to a longer review interval (1, 3, 7, 16, 35 days), a wrong answer sends it back to be relearned. The **Study** tab serves what is due first (weakest boxes first), then up to 15 new questions a day, your state's first. Once the day's new questions are done, a **Study 15 more** button adds another batch. The **Browse** menu filters the catalogue (all, general, your state, new, mistakes, mastered).
 - Timed mock exam: 33 questions (30 general, 3 from your state), 60 minutes, pass mark 17. Answers can be changed until you finish, the clock survives a page reload, and the exam is submitted automatically when time runs out.
 - A built-in "How to study" guide for newcomers: the test format, a daily routine, how the review schedule works and study tips. It opens from the header and is offered once to first-time visitors.

@@ -10,7 +10,7 @@
 
   // state stays null until the learner picks one, so the app knows to ask.
   function empty() {
-    return { version: 2, cards: {}, exams: [], activeExam: null, daily: null, settings: { showEnglish: false, state: null } };
+    return { version: 2, cards: {}, exams: [], activeExam: null, daily: null, settings: { showEnglish: false, explainEnglish: true, state: null } };
   }
 
   // Every scope other than General is a state code, so the catalogue itself says which codes are valid.
@@ -80,6 +80,7 @@
       p.daily = cleanDaily(raw.daily);
       const settings = raw.settings || {};
       if (typeof settings.showEnglish === 'boolean') p.settings.showEnglish = settings.showEnglish;
+      if (typeof settings.explainEnglish === 'boolean') p.settings.explainEnglish = settings.explainEnglish;
       p.settings.state = stateCodes(byId).has(settings.state) ? settings.state : LEGACY_STATE;
       return p;
     }

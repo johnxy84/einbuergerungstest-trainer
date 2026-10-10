@@ -345,7 +345,14 @@
       if (state.progress.settings.showEnglish) fb.append(h('div', { class: 'small', lang: 'en', text: q.en_options[q.correct] }));
     }
     fb.append(h('p', { class: 'why', lang: 'de' }, h('strong', { text: 'Warum: ' }), EXPLANATIONS_DE[q.id]));
-    if (state.progress.settings.showEnglish) fb.append(h('p', { class: 'why en', lang: 'en' }, h('strong', { text: 'Why: ' }), EXPLANATIONS[q.id]));
+    const explainEn = state.progress.settings.explainEnglish;
+    if (explainEn) fb.append(h('p', { class: 'why en', lang: 'en' }, h('strong', { text: 'Why: ' }), EXPLANATIONS[q.id]));
+    fb.append(h('button', {
+      type: 'button',
+      class: 'link explain-toggle',
+      onclick: () => { state.progress.settings.explainEnglish = !explainEn; persist(); render(); },
+      text: explainEn ? 'Hide English explanation' : 'Show English explanation',
+    }));
   }
 
   function renderStats() {
@@ -503,9 +510,10 @@
 
   function resetProgress() {
     if (!confirm('Reset all saved progress? This cannot be undone.')) return;
-    const { showEnglish, state: stateCode } = state.progress.settings;
+    const { showEnglish, explainEnglish, state: stateCode } = state.progress.settings;
     state.progress = Store.empty();
     state.progress.settings.showEnglish = showEnglish;
+    state.progress.settings.explainEnglish = explainEnglish;
     state.progress.settings.state = stateCode;
     state.exam = null;
     state.review = null;
