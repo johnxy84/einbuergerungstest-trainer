@@ -184,8 +184,12 @@ select.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--a
 .seg-b5 { background: var(--good); }
 
 .jump { margin-top: 16px; }
-.plan { margin-top: 16px; }
-.plan input { width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); color-scheme: inherit; }
+.plan { margin: 0 0 15px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--panel); }
+.plan.unset { border-color: var(--accent); }
+.plan-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.plan-label { font-weight: 600; }
+.plan input { flex: 1 1 150px; min-width: 0; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); color-scheme: inherit; }
+.plan .small { margin: 8px 0 0; }
 .jump-row { display: flex; gap: 8px; margin-top: 4px; }
 .jump input { width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); }
 

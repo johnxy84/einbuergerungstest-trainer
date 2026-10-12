@@ -39,6 +39,15 @@
 
     <nav class="tabs" id="tabs" aria-label="Question sets"></nav>
 
+    <section class="plan" id="plan" aria-label="Exam date plan">
+      <div class="plan-row">
+        <label for="examDate" class="plan-label">📅 Exam date</label>
+        <input id="examDate" type="date">
+        <button type="button" id="clearExamDate" hidden>Clear</button>
+      </div>
+      <p class="small" id="planNote"></p>
+    </section>
+
     <div class="toolbar">
       <button type="button" id="translate" class="lang-toggle" aria-pressed="false"></button>
       <button type="button" id="shuffle">🔀 Shuffle</button>
@@ -88,15 +97,6 @@
         <ul class="legend" id="legend"></ul>
         <p class="small" id="mode"></p>
 
-        <div class="plan">
-          <label for="examDate" class="small">Exam date</label>
-          <div class="jump-row">
-            <input id="examDate" type="date">
-            <button type="button" id="clearExamDate" hidden>Clear</button>
-          </div>
-          <p class="small muted" id="planNote"></p>
-        </div>
-
         <div class="jump">
           <label for="jump" class="small">Jump to position</label>
           <div class="jump-row">
@@ -140,7 +140,7 @@
           <li><strong>Study</strong> every day. It shows what is due for review first, then the day's new questions: 15 by default, or more or fewer once you set your <strong>exam date</strong>. Clear the due ones before moving on.</li>
           <li>Learn the <strong>10 questions for your state</strong> in the first days. They come first among the new ones.</li>
           <li>Take a <strong>Mock exam</strong> about once a week, and daily in the last week. Aim for 27 or more out of 33 so you have a safety margin over 17.</li>
-          <li>Set your exam date under <em>Your progress</em>. The trainer spreads the questions you have not seen yet over the days left, keeping the last day or two for review. Without a date, 15 a day takes about three weeks. Keep reviewing until the exam.</li>
+          <li>Set your exam date just under the tabs. The trainer spreads the questions you have not seen yet over the days left, keeping the last day or two for review. Without a date, 15 a day takes about three weeks. Keep reviewing until the exam.</li>
         </ol>
       </section>
 

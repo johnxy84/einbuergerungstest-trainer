@@ -421,7 +421,8 @@
     const date = state.progress.settings.examDate || '';
     if (input.value !== date) input.value = date;
     $('clearExamDate').hidden = !date;
-    $('planNote').textContent = planText(studyPlan());
+    $('plan').classList.toggle('unset', !date);
+    $('planNote').textContent = date ? planText(studyPlan()) : 'Set your exam date and the daily new questions are planned to fit it. Until then: ' + SRS.NEW_PER_DAY + ' a day.';
   }
 
   function setExamDate(value) {
