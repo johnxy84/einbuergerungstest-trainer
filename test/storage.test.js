@@ -153,3 +153,11 @@ test('corrupt saved data is ignored', () => {
   const storage = memoryStorage({ [Store.KEY]: '{not json' });
   assert.deepEqual(Store.createStore(storage, byId, () => NOW).load(), Store.empty());
 });
+
+test('exam date setting is validated on import', () => {
+  const base = (examDate) => ({ version: 2, cards: {}, settings: { examDate } });
+  assert.equal(Store.normalize(base('2026-03-14'), byId, NOW).settings.examDate, '2026-03-14');
+  assert.equal(Store.normalize(base('2026-02-31'), byId, NOW).settings.examDate, null);
+  assert.equal(Store.normalize(base('soon'), byId, NOW).settings.examDate, null);
+  assert.equal(Store.empty().settings.examDate, null);
+});

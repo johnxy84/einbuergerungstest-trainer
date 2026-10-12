@@ -70,9 +70,9 @@
     return daily && daily.day === day ? daily : { day, started: 0, extra: 0 };
   }
 
-  function newLeftToday(daily, now) {
+  function newLeftToday(daily, now, perDay) {
     const t = today(daily, now);
-    return Math.max(0, NEW_PER_DAY + t.extra - t.started);
+    return Math.max(0, (perDay == null ? NEW_PER_DAY : perDay) + t.extra - t.started);
   }
 
   function countNewStarted(daily, now) {
@@ -80,9 +80,41 @@
     return Object.assign({}, t, { started: t.started + 1 });
   }
 
-  function addNewBatch(daily, now) {
+  function addNewBatch(daily, now, perDay) {
     const t = today(daily, now);
-    return Object.assign({}, t, { extra: t.extra + NEW_PER_DAY });
+    return Object.assign({}, t, { extra: t.extra + (perDay == null ? NEW_PER_DAY : perDay) });
+  }
+
+  const MIN_PER_DAY = 5;
+  const TIGHT_PER_DAY = 40;
+
+  function isDateKey(value) {
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const [y, m, d] = value.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
+  }
+
+  // Whole local calendar days from today until the exam date (0 = today, negative = passed).
+  function daysUntil(examDate, now) {
+    const [y, m, d] = examDate.split('-').map(Number);
+    const n = new Date(now);
+    return Math.round((new Date(y, m - 1, d) - new Date(n.getFullYear(), n.getMonth(), n.getDate())) / DAY_MS);
+  }
+
+  // How many new questions to start today. `unseen` is the number still unseen at the start of today.
+  // The last days before the exam are kept free for review (2 days when the exam is a week or more away, 1 from 3 days, otherwise none).
+  // Status: none (no date), ok, tight (more than TIGHT_PER_DAY a day), exam-day, passed, done (nothing left to learn).
+  function plan(unseen, examDate, now) {
+    if (!isDateKey(examDate)) return { status: 'none', perDay: NEW_PER_DAY, daysLeft: null, studyDays: null };
+    const daysLeft = daysUntil(examDate, now);
+    if (daysLeft < 0) return { status: 'passed', perDay: NEW_PER_DAY, daysLeft, studyDays: 0 };
+    if (daysLeft === 0) return { status: 'exam-day', perDay: 0, daysLeft, studyDays: 0 };
+    const reserve = daysLeft >= 7 ? 2 : daysLeft >= 3 ? 1 : 0;
+    const studyDays = Math.max(1, daysLeft - reserve);
+    if (unseen <= 0) return { status: 'done', perDay: 0, daysLeft, studyDays };
+    const perDay = Math.max(MIN_PER_DAY, Math.ceil(unseen / studyDays));
+    return { status: perDay > TIGHT_PER_DAY ? 'tight' : 'ok', perDay, daysLeft, studyDays };
   }
 
   // boxes[0] holds cards that were missed last time and need relearning; unseen questions are counted separately.
@@ -102,5 +134,5 @@
     return days === 1 ? 'next review in 1 day' : 'next review in ' + days + ' days';
   }
 
-  return { DAY_MS, BOX_DAYS, MAX_BOX, MASTERED_BOX, RETRY_DELAY_MS, NEW_PER_DAY, newCard, grade, postpone, isDue, isMastered, isMistake, dueQueue, studyQueue, dayKey, today, newLeftToday, countNewStarted, addNewBatch, distribution, describeInterval };
+  return { DAY_MS, BOX_DAYS, MAX_BOX, MASTERED_BOX, RETRY_DELAY_MS, NEW_PER_DAY, MIN_PER_DAY, TIGHT_PER_DAY, isDateKey, daysUntil, plan, newCard, grade, postpone, isDue, isMastered, isMistake, dueQueue, studyQueue, dayKey, today, newLeftToday, countNewStarted, addNewBatch, distribution, describeInterval };
 });

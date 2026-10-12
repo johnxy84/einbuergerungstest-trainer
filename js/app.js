@@ -85,6 +85,13 @@
 
   const cards = () => state.progress.cards;
   const isUnseen = (id) => !cards()[id] || cards()[id].seen === 0;
+
+  // Today's plan: new questions per day, from the exam date (if set) and what is still unseen. Unseen counts the ones already started today so the target stays steady all day.
+  function studyPlan() {
+    const now = Date.now();
+    const unseenNow = catalogue().filter((q) => isUnseen(q.id)).length;
+    return SRS.plan(unseenNow + SRS.today(state.progress.daily, now).started, state.progress.settings.examDate, now);
+  }
   const dueQuestions = () => SRS.dueQueue(catalogue(), cards(), Date.now());
   const current = () => state.pool[state.index];
   const inExam = () => state.mode === 'exam' && !!state.exam;
@@ -102,7 +109,7 @@
   function buildPool(mode) {
     const c = cards();
     switch (mode) {
-      case 'study': return SRS.studyQueue(catalogue(), c, Date.now(), SRS.newLeftToday(state.progress.daily, Date.now()));
+      case 'study': return SRS.studyQueue(catalogue(), c, Date.now(), SRS.newLeftToday(state.progress.daily, Date.now(), studyPlan().perDay));
       case 'general': return catalogue().filter(isGeneral);
       case 'state': return stateQuestions();
       case 'new': return catalogue().filter((q) => !c[q.id]);
@@ -152,7 +159,7 @@
   }
 
   function studyMore() {
-    state.progress.daily = SRS.addNewBatch(state.progress.daily, Date.now());
+    state.progress.daily = SRS.addNewBatch(state.progress.daily, Date.now(), Math.max(studyPlan().perDay, SRS.MIN_PER_DAY));
     persist();
     setMode('study');
   }
@@ -377,7 +384,7 @@
     $('legend').replaceChildren(...segments.map((s) => h('li', {}, h('i', { class: 'swatch ' + s.cls }), h('span', { text: s.label }), h('b', { text: s.n }))));
 
     const modeNotes = {
-      study: 'Questions due for review come first, weakest first, followed by up to ' + SRS.NEW_PER_DAY + ' new ones a day (your state first). Missed questions return once at the end. New questions left today: ' + SRS.newLeftToday(state.progress.daily, Date.now()) + '.',
+      study: 'Questions due for review come first, weakest first, followed by up to ' + studyPlan().perDay + ' new ones a day (your state first). Missed questions return once at the end. New questions left today: ' + SRS.newLeftToday(state.progress.daily, Date.now(), studyPlan().perDay) + '.',
       all: 'All ' + mine.length + ' questions in catalogue order.',
       general: 'The ' + mine.filter(isGeneral).length + ' questions shared by every federal state.',
       state: 'The ' + stateQuestions().length + ' questions for ' + stateName() + '.',
@@ -387,6 +394,7 @@
       exam: Exam.GENERAL_COUNT + ' general + ' + Exam.STATE_COUNT + ' ' + stateName() + ' questions in 60 minutes. Answers can be changed until you finish.',
     };
     $('mode').textContent = modeNotes[state.mode];
+    renderPlan();
 
     const fmt = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     const items = state.progress.exams.slice(-5).reverse().map((e) => h('li', {},
@@ -394,6 +402,33 @@
       h('span', { class: 'small', text: fmt.format(e.at) + ' · ' + Math.max(1, Math.round(e.seconds / 60)) + ' min' }),
     ));
     $('history').replaceChildren(...(items.length ? items : [h('li', { class: 'small muted', text: 'No mock exams yet.' })]));
+  }
+
+  function planText(p) {
+    const left = p.daysLeft === 1 ? '1 day' : p.daysLeft + ' days';
+    switch (p.status) {
+      case 'none': return 'No exam date set: ' + SRS.NEW_PER_DAY + ' new questions a day.';
+      case 'passed': return 'This date has passed. Pick a new one, or clear it to go back to ' + SRS.NEW_PER_DAY + ' a day.';
+      case 'exam-day': return 'Exam day. No new questions today: do a quick review or one mock exam, then rest.';
+      case 'done': return left + ' to go and you have seen every question. Keep reviewing and take mock exams.';
+      case 'tight': return left + ' to go: about ' + p.perDay + ' new questions a day is a lot. Start with your state and the questions you know least, and take mock exams to find gaps.';
+      default: return left + ' to go: about ' + p.perDay + ' new questions a day' + (p.daysLeft - p.studyDays > 0 ? ', with the last ' + (p.daysLeft - p.studyDays) + (p.daysLeft - p.studyDays === 1 ? ' day' : ' days') + ' kept for review.' : '.');
+    }
+  }
+
+  function renderPlan() {
+    const input = $('examDate');
+    const date = state.progress.settings.examDate || '';
+    if (input.value !== date) input.value = date;
+    $('clearExamDate').hidden = !date;
+    $('planNote').textContent = planText(studyPlan());
+  }
+
+  function setExamDate(value) {
+    state.progress.settings.examDate = SRS.isDateKey(value) ? value : null;
+    persist();
+    // A new target changes today's allowance, so rebuild the Study queue.
+    if (state.mode === 'study') setMode('study'); else renderPlan();
   }
 
   function renderHeader() {
@@ -425,14 +460,15 @@
       $('scope').textContent = '';
       $('counter').textContent = '0 / 0';
       // Study runs dry before the catalogue does when today's new questions are used up.
+      const moreCount = Math.max(studyPlan().perDay, SRS.MIN_PER_DAY);
       const doneForToday = state.mode === 'study' && catalogue().some((x) => isUnseen(x.id));
       $('question').textContent = doneForToday
-        ? 'Done for today: nothing is due and you have started ' + SRS.today(state.progress.daily, Date.now()).started + ' new questions today. Come back tomorrow, or study ' + SRS.NEW_PER_DAY + ' more now.'
+        ? 'Done for today: nothing is due and you have started ' + SRS.today(state.progress.daily, Date.now()).started + ' new questions today. Come back tomorrow, or study ' + moreCount + ' more now.'
         : EMPTY_MESSAGES[state.mode] || 'No questions in this set.';
       $('translation').classList.remove('show');
       $('qimg').hidden = true;
       $('imgCredit').hidden = true;
-      $('options').replaceChildren(...(doneForToday ? [h('button', { type: 'button', class: 'primary more', onclick: studyMore, text: 'Study ' + SRS.NEW_PER_DAY + ' more' })] : []));
+      $('options').replaceChildren(...(doneForToday ? [h('button', { type: 'button', class: 'primary more', onclick: studyMore, text: 'Study ' + moreCount + ' more' })] : []));
       $('feedback').className = 'feedback';
       $('feedback').replaceChildren();
       return;
@@ -510,11 +546,12 @@
 
   function resetProgress() {
     if (!confirm('Reset all saved progress? This cannot be undone.')) return;
-    const { showEnglish, explainEnglish, state: stateCode } = state.progress.settings;
+    const { showEnglish, explainEnglish, state: stateCode, examDate } = state.progress.settings;
     state.progress = Store.empty();
     state.progress.settings.showEnglish = showEnglish;
     state.progress.settings.explainEnglish = explainEnglish;
     state.progress.settings.state = stateCode;
+    state.progress.settings.examDate = examDate;
     state.exam = null;
     state.review = null;
     persist();
@@ -549,6 +586,8 @@
       if (f) importProgress(f);
     });
     $('reset').addEventListener('click', resetProgress);
+    $('examDate').addEventListener('change', (e) => setExamDate(e.target.value));
+    $('clearExamDate').addEventListener('click', () => setExamDate(''));
     const go = () => {
       const n = parseInt($('jump').value, 10);
       if (n >= 1 && n <= state.pool.length) { state.index = n - 1; render(); }

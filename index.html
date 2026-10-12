@@ -89,6 +89,15 @@
         <ul class="legend" id="legend"></ul>
         <p class="small" id="mode"></p>
 
+        <div class="plan">
+          <label for="examDate" class="small">Exam date</label>
+          <div class="jump-row">
+            <input id="examDate" type="date">
+            <button type="button" id="clearExamDate" hidden>Clear</button>
+          </div>
+          <p class="small muted" id="planNote"></p>
+        </div>
+
         <div class="jump">
           <label for="jump" class="small">Jump to position</label>
           <div class="jump-row">
@@ -129,17 +138,17 @@
       <section>
         <h3>A simple routine</h3>
         <ol>
-          <li><strong>Study</strong> every day. It shows what is due for review first, then 15 new questions. Clear the due ones before moving on.</li>
+          <li><strong>Study</strong> every day. It shows what is due for review first, then the day's new questions: 15 by default, or more or fewer once you set your <strong>exam date</strong>. Clear the due ones before moving on.</li>
           <li>Learn the <strong>10 questions for your state</strong> in the first days. They come first among the new ones.</li>
           <li>Take a <strong>Mock exam</strong> about once a week, and daily in the last week. Aim for 27 or more out of 33 so you have a safety margin over 17.</li>
-          <li>With around 15 new questions a day you will have seen everything in about three weeks. Keep reviewing until the exam.</li>
+          <li>Set your exam date under <em>Your progress</em>. The trainer spreads the questions you have not seen yet over the days left, keeping the last day or two for review. Without a date, 15 a day takes about three weeks. Keep reviewing until the exam.</li>
         </ol>
       </section>
 
       <section>
         <h3>What the tabs do</h3>
         <dl class="defs">
-          <dt>📖 Study</dt><dd>Your daily session. Due questions first (weakest first), then up to 15 new ones a day. A question you miss comes back once at the end of the session. When you are done for the day you can press <em>Study 15 more</em> to keep going.</dd>
+          <dt>📖 Study</dt><dd>Your daily session. Due questions first (weakest first), then the day's new ones (15 a day, or the number your exam date calls for). A question you miss comes back once at the end of the session. When you are done for the day you can press <em>Study more</em> to keep going.</dd>
           <dt>🎯 Mock exam</dt><dd>33 random questions in 60 minutes, like the real test. You can change answers until you press <em>Finish exam</em>, and the clock keeps running if you reload. When it hits zero the exam is submitted. Afterwards you can step through every question with the explanation.</dd>
           <dt>📚 Browse…</dt><dd>Filters for looking things up: all questions in catalogue order, general only, your state only, questions you have not seen yet, your mistakes, and the ones you have mastered.</dd>
         </dl>

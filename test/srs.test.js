@@ -113,3 +113,23 @@ test('Study starts at most 15 new questions a day, more on request, and starts o
   assert.equal(SRS.newLeftToday(more, nextMorning), SRS.NEW_PER_DAY);
   assert.deepEqual(SRS.countNewStarted(more, nextMorning), { day: '2026-01-02', started: 1, extra: 0 });
 });
+
+test('exam-date plan spreads unseen questions over the days left', () => {
+  const now = new Date(2026, 0, 1, 10).getTime();
+  assert.equal(SRS.plan(310, null, now).perDay, SRS.NEW_PER_DAY);
+  assert.equal(SRS.plan(310, null, now).status, 'none');
+  const week = SRS.plan(310, '2026-01-08', now); // 7 days away, last 2 for review
+  assert.deepEqual([week.daysLeft, week.studyDays, week.perDay, week.status], [7, 5, 62, 'tight']);
+  const month = SRS.plan(310, '2026-01-31', now); // 30 days, 28 study days
+  assert.deepEqual([month.perDay, month.status], [12, 'ok']);
+  assert.equal(SRS.plan(310, '2027-01-01', now).perDay, SRS.MIN_PER_DAY, 'a distant date never drops below the minimum');
+  assert.equal(SRS.plan(310, '2026-01-02', now).perDay, 310, 'exam tomorrow: everything today');
+  assert.equal(SRS.plan(310, '2026-01-01', now).status, 'exam-day');
+  assert.equal(SRS.plan(310, '2026-01-01', now).perDay, 0);
+  assert.equal(SRS.plan(310, '2025-12-31', now).status, 'passed');
+  assert.equal(SRS.plan(310, '2025-12-31', now).perDay, SRS.NEW_PER_DAY);
+  assert.equal(SRS.plan(0, '2026-01-20', now).status, 'done');
+  assert.equal(SRS.plan(310, 'garbage', now).status, 'none');
+  assert.equal(SRS.newLeftToday(null, now, 62), 62);
+  assert.equal(SRS.newLeftToday(SRS.addNewBatch(null, now, 62), now, 62), 124);
+});
