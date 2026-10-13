@@ -22,8 +22,7 @@
       <div class="top-actions">
         <button type="button" id="openStatePicker" class="state-chip" aria-haspopup="dialog">📍 Choose your state</button>
         <button type="button" id="themeToggle"></button>
-        <button type="button" id="openGuide">ℹ️ How to study</button>
-        <span class="badge">BAMF catalogue · 07.05.2025</span>
+        <button type="button" id="openGuide">ℹ️ Guide</button>
       </div>
     </header>
 
@@ -35,25 +34,36 @@
       </span>
     </div>
 
-    <p class="notice">Progress is stored only in this browser. Use <strong>Export</strong> to back it up or move it to another device.</p>
-
     <nav class="tabs" id="tabs" aria-label="Question sets"></nav>
 
     <section class="plan" id="plan" aria-label="Exam date plan">
-      <div class="plan-row">
-        <label for="examDate" class="plan-label">📅 Exam date</label>
-        <input id="examDate" type="date">
-        <button type="button" id="clearExamDate" hidden>Clear</button>
+      <button type="button" id="planToggle" class="plan-summary" aria-expanded="false" aria-controls="planEdit">
+        <span id="planSummary"></span><span class="plan-action" id="planAction">Set</span>
+      </button>
+      <div id="planEdit" class="plan-edit" hidden>
+        <div class="plan-row">
+          <label for="examDate" class="plan-label">Exam date</label>
+          <input id="examDate" type="date">
+          <button type="button" id="clearExamDate" hidden>Clear</button>
+        </div>
+        <p class="small" id="planNote"></p>
       </div>
-      <p class="small" id="planNote"></p>
     </section>
 
     <div class="toolbar">
       <button type="button" id="translate" class="lang-toggle" aria-pressed="false"></button>
       <button type="button" id="shuffle">🔀 Shuffle</button>
-      <button type="button" id="export">💾 Export progress</button>
-      <button type="button" id="import">📥 Import progress</button>
-      <button type="button" id="reset" class="danger">↺ Reset progress</button>
+      <details class="data-menu" id="dataMenu">
+        <summary>💾 Backup &amp; reset</summary>
+        <div class="data-body">
+          <p class="small">Progress is stored only in this browser. Export it to back it up or move it to another device.</p>
+          <div class="data-actions">
+            <button type="button" id="export">💾 Export progress</button>
+            <button type="button" id="import">📥 Import progress</button>
+            <button type="button" id="reset" class="danger">↺ Reset progress</button>
+          </div>
+        </div>
+      </details>
       <input id="file" type="file" accept="application/json" hidden>
     </div>
 
@@ -140,7 +150,7 @@
           <li><strong>Study</strong> every day. It shows what is due for review first, then the day's new questions: 15 by default, or more or fewer once you set your <strong>exam date</strong>. Clear the due ones before moving on.</li>
           <li>Learn the <strong>10 questions for your state</strong> in the first days. They come first among the new ones.</li>
           <li>Take a <strong>Mock exam</strong> about once a week, and daily in the last week. Aim for 27 or more out of 33 so you have a safety margin over 17.</li>
-          <li>Set your exam date just under the tabs. The trainer spreads the questions you have not seen yet over the days left, keeping the last day or two for review. Without a date, 15 a day takes about three weeks. Keep reviewing until the exam.</li>
+          <li>Set your exam date in the bar under the tabs. The trainer spreads the questions you have not seen yet over the days left, keeping the last day or two for review. Without a date, 15 a day takes about three weeks. Keep reviewing until the exam.</li>
         </ol>
       </section>
 

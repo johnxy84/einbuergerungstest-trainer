@@ -1,6 +1,6 @@
 // Offline support: serve from cache, refresh the cache in the background.
 // Bump CACHE when the precache list changes shape.
-const CACHE = 'einbuergerungstest-v7';
+const CACHE = 'einbuergerungstest-v8';
 const PRECACHE = [
   './',
   'index.html',

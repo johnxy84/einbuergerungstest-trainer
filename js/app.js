@@ -416,13 +416,33 @@
     }
   }
 
+  function planShort(p) {
+    const left = p.daysLeft === 1 ? '1 day' : p.daysLeft + ' days';
+    switch (p.status) {
+      case 'none': return '📅 Set your exam date';
+      case 'passed': return '📅 Exam date has passed';
+      case 'exam-day': return '📅 Exam day: review only';
+      case 'done': return '📅 ' + left + ' to go · all questions seen';
+      default: return '📅 ' + left + ' to go · about ' + p.perDay + ' new a day';
+    }
+  }
+
   function renderPlan() {
     const input = $('examDate');
     const date = state.progress.settings.examDate || '';
     if (input.value !== date) input.value = date;
     $('clearExamDate').hidden = !date;
     $('plan').classList.toggle('unset', !date);
-    $('planNote').textContent = date ? planText(studyPlan()) : 'Set your exam date and the daily new questions are planned to fit it. Until then: ' + SRS.NEW_PER_DAY + ' a day.';
+    $('planSummary').textContent = planShort(studyPlan());
+    $('planAction').textContent = date ? 'Edit' : 'Set';
+    $('planNote').textContent = date ? planText(studyPlan()) : 'The daily new questions are planned to fit your exam date. Until then: ' + SRS.NEW_PER_DAY + ' a day.';
+  }
+
+  function togglePlan() {
+    const open = $('planEdit').hidden;
+    $('planEdit').hidden = !open;
+    $('planToggle').setAttribute('aria-expanded', String(open));
+    if (open) $('examDate').focus();
   }
 
   function setExamDate(value) {
@@ -438,7 +458,7 @@
     chip.textContent = '📍 ' + (info ? info.name : 'Choose your state');
     chip.setAttribute('aria-label', info ? 'Federal state: ' + Catalogue.label(info) + '. Change' : 'Choose your federal state');
     if ($('statePicker').open) renderStatePicker();
-    $('subline').textContent = (info ? catalogue().length + ' questions for ' + info.name : 'Questions for every federal state') + ' · German with optional English translation · works offline';
+    $('subline').textContent = (info ? catalogue().length + ' questions for ' + info.name : 'Questions for every federal state') + ' · BAMF catalogue 07.05.2025 · works offline';
   }
 
   function render() {
@@ -587,6 +607,7 @@
       if (f) importProgress(f);
     });
     $('reset').addEventListener('click', resetProgress);
+    $('planToggle').addEventListener('click', togglePlan);
     $('examDate').addEventListener('change', (e) => setExamDate(e.target.value));
     $('clearExamDate').addEventListener('click', () => setExamDate(''));
     const go = () => {
@@ -607,9 +628,9 @@
 
   const THEME_KEY = 'einbuergerungstest.theme';
   const THEMES = [
-    { id: 'system', label: '🖥️ Theme: System' },
-    { id: 'light', label: '☀️ Theme: Light' },
-    { id: 'dark', label: '🌙 Theme: Dark' },
+    { id: 'system', label: '🖥️ System' },
+    { id: 'light', label: '☀️ Light' },
+    { id: 'dark', label: '🌙 Dark' },
   ];
 
   function savedTheme() {
@@ -624,7 +645,7 @@
     else document.documentElement.dataset.theme = id;
     const t = THEMES.find((x) => x.id === id);
     $('themeToggle').textContent = t.label;
-    $('themeToggle').title = 'Switch between the system setting, light and dark. Saved on this device.';
+    $('themeToggle').title = 'Theme: ' + t.label.replace(/^\S+ /, '') + '. Switch between the system setting, light and dark. Saved on this device.';
   }
 
   function bindTheme() {
